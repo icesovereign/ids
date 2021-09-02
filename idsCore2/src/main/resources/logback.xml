@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="60 seconds" debug="false">
+    <property name="server.id" value="core"/>
+    <property name="log.path" value="./log"/>
+    <property name="log.pattern"
+              value="[%d{yyyy-MM-dd} %d{HH:mm:ss.SSS}][%thread] %-5level \\(%logger{0}.java:%L\\): %msg%n"/>
+    <!--输出到控制台-->
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${log.pattern}</pattern>
+        </encoder>
+    </appender>
+
+    <!--输出到文件-->
+    <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.path}\${server.id}\console.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.path}\${server.id}/old/console.%d{yyyy-MM-dd}.log</fileNamePattern>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${log.pattern}</pattern>
+        </encoder>
+    </appender>
+
+    <!--报错 输出到文件-->
+    <appender name="error" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.path}\${server.id}\error.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.path}\${server.id}/old/error.%d{yyyy-MM-dd}.log</fileNamePattern>
+        </rollingPolicy>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        <encoder>
+            <pattern>${log.pattern}</pattern>
+        </encoder>
+    </appender>
+
+    <!--第三方日志 输出到文件-->
+    <appender name="other" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.path}\${server.id}\other.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.path}\${server.id}/old/other.%d{yyyy-MM-dd}.log</fileNamePattern>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${log.pattern}</pattern>
+        </encoder>
+    </appender>
+
+    <root level="trace">
+        <appender-ref ref="console"/>
+        <appender-ref ref="file"/>
+        <appender-ref ref="error"/>
+    </root>
+
+    <logger name="io.netty">
+        <level value="info" />
+        <appender-ref ref="other" />
+        <appender-ref ref="error"/>
+    </logger>
+    <logger name="cn.hutool">
+        <level value="info" />
+        <appender-ref ref="other" />
+        <appender-ref ref="error"/>
+    </logger>
+
+</configuration>
