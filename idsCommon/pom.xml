@@ -1,38 +1,33 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.sencorsta</groupId>
-	<artifactId>idsCommon</artifactId>
-	<version>2.0-SNAPSHOT</version>
-	<packaging>jar</packaging>
-	<name>idsCommon</name>
-	<description>ICe Distribution Service Common</description>
-	<url>http://www.sencorsta.com</url>
+    <parent>
+        <groupId>com.sencorsta</groupId>
+        <artifactId>ids</artifactId>
+        <version>2.0-SNAPSHOT</version>
+    </parent>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
+    <artifactId>idsCommon</artifactId>
+    <packaging>jar</packaging>
+    <name>idsCommon</name>
+    <description>ICe Distribution Service Common</description>
+    <url>http://www.sencorsta.com</url>
 
-	<dependencies>
-		<dependency>
-			<groupId>com.sencorsta</groupId>
-			<artifactId>idsCore</artifactId>
-			<version>2.0-SNAPSHOT</version>
-		</dependency>
-	</dependencies>
-	
-		<build>
-		<sourceDirectory>src/main/java</sourceDirectory>
-		<testSourceDirectory>src/test/java</testSourceDirectory>
-		<plugins>
-			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.0</version>
-				<configuration>
-					<release>11</release>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.sencorsta</groupId>
+            <artifactId>idsCore</artifactId>
+            <version>2.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <sourceDirectory>src/main/java</sourceDirectory>
+        <testSourceDirectory>src/test/java</testSourceDirectory>
+    </build>
 </project>
