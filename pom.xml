@@ -1,0 +1,171 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.sencorsta</groupId>
+	<artifactId>ids</artifactId>
+	<version>2.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<name>ids</name>
+	<description>ICe Distribution Service Master</description>
+	<url>http://www.sencorsta.com</url>
+
+	<modules>
+		<module>idsCore2</module>
+		<module>idsCommon</module>
+		<module>idsMaster</module>
+	</modules>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<java.version>8</java.version>
+		<maven.compiler.source>${java.version}</maven.compiler.source>
+		<maven.compiler.target>${java.version}</maven.compiler.target>
+		<protobuf-java.version>3.17.3</protobuf-java.version>
+		<netty-all.version>4.1.67.Final</netty-all.version>
+		<logback-classic.version>1.2.5</logback-classic.version>
+		<jackson-databind.version>2.12.4</jackson-databind.version>
+		<redisson.version>3.16.1</redisson.version>
+		<druid.version>1.2.6</druid.version>
+		<mongodb-driver-sync.version>4.3.1</mongodb-driver-sync.version>
+		<mysql-connector-java.version>8.0.26</mysql-connector-java.version>
+		<javax.activation.version>1.2.0</javax.activation.version>
+		<hutool-all.version>5.3.10</hutool-all.version>
+		<lombok.version>1.18.14</lombok.version>
+		<guava.version>30.1.1-jre</guava.version>
+	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<!--序列化工具 -->
+			<dependency>
+				<groupId>com.google.protobuf</groupId>
+				<artifactId>protobuf-java</artifactId>
+				<version>${protobuf-java.version}</version>
+			</dependency>
+			<!-- netty通讯组件 -->
+			<dependency>
+				<groupId>io.netty</groupId>
+				<artifactId>netty-all</artifactId>
+				<version>${netty-all.version}</version>
+			</dependency>
+			<!-- 日志相关 -->
+			<dependency>
+				<groupId>ch.qos.logback</groupId>
+				<artifactId>logback-classic</artifactId>
+				<version>${logback-classic.version}</version>
+			</dependency>
+			<!-- json工具fastjson -->
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-databind</artifactId>
+				<version>${jackson-databind.version}</version>
+			</dependency>
+			<!-- Redis -->
+			<dependency>
+				<groupId>org.redisson</groupId>
+				<artifactId>redisson</artifactId>
+				<version>${redisson.version}</version>
+			</dependency>
+			<!-- mysql数据库连接池druid -->
+			<dependency>
+				<groupId>com.alibaba</groupId>
+				<artifactId>druid</artifactId>
+				<version>${druid.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.mongodb</groupId>
+				<artifactId>mongodb-driver-sync</artifactId>
+				<version>${mongodb-driver-sync.version}</version>
+			</dependency>
+			<!-- mysql -->
+			<dependency>
+				<groupId>mysql</groupId>
+				<artifactId>mysql-connector-java</artifactId>
+				<version>${mysql-connector-java.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.sun.activation</groupId>
+				<artifactId>javax.activation</artifactId>
+				<version>${javax.activation.version}</version>
+			</dependency>
+			<!-- 工具类 -->
+			<dependency>
+				<groupId>cn.hutool</groupId>
+				<artifactId>hutool-all</artifactId>
+				<version>${hutool-all.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.projectlombok</groupId>
+				<artifactId>lombok</artifactId>
+				<version>${lombok.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.guava</groupId>
+				<artifactId>guava</artifactId>
+				<version>${guava.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+			</plugin>
+			<!--发布代码Jar插件-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+			</plugin>
+			<!--发布源码插件-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.8.0</version>
+					<configuration>
+						<source>8</source>
+						<target>8</target>
+					</configuration>
+				</plugin>
+				<!--发布代码Jar插件-->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-deploy-plugin</artifactId>
+					<version>2.7</version>
+				</plugin>
+				<!--发布源码插件-->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>2.2.1</version>
+					<executions>
+						<execution>
+							<phase>package</phase>
+							<goals>
+								<goal>jar</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+</project>
