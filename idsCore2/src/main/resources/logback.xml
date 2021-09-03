@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="true" scanPeriod="60 seconds" debug="false">
-    <property name="server.id" value="core"/>
-    <property name="log.path" value="./log"/>
+    <property name="server.id" value="${server.type:-default}"/>
+    <property name="log.path" value="${log.home:-./log}"/>
+    <property name="log.patternColor"
+              value="[%d{yyyy-MM-dd} %d{HH:mm:ss.SSS}][%boldYellow(%thread)] %highlight(%-5level) \\(%logger{0}.java:%L\\): %msg%n"/>
     <property name="log.pattern"
               value="[%d{yyyy-MM-dd} %d{HH:mm:ss.SSS}][%thread] %-5level \\(%logger{0}.java:%L\\): %msg%n"/>
     <!--输出到控制台-->
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <whitJansi>true</whitJansi>
         <encoder>
-            <pattern>${log.pattern}</pattern>
+            <pattern>${log.patternColor}</pattern>
         </encoder>
     </appender>
 

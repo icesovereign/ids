@@ -98,8 +98,6 @@
                 <version>3.8.0</version>
                 <configuration>
                     <release>11</release>
-                    <compilerArgs>
-                    </compilerArgs>
                 </configuration>
             </plugin>
             <!--发布代码Jar插件-->
