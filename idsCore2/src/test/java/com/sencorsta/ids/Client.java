@@ -13,15 +13,15 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Client {
     public static void main(String[] args) throws InterruptedException {
-        GlobalConfig instance = GlobalConfig.instance();
+        GlobalConfig.instance();
         GlobalConfig.isDebug = false;
         RpcClientBootstrap bootstrap = new RpcClientBootstrap("test", new RpcCodecFactory(new RpcClientChannelHandler()));
-        Channel connect = bootstrap.connect("127.0.0.1", 10001);
-        int total = 10000;
+        Channel connect = bootstrap.connect("127.0.0.1", 10002);
+        int total = 1;
         int count = 0;
         while (count < total) {
             RpcMessage message = new RpcMessage(ProtocolTypeConstant.TYPE_RPC_REQ);
-            message.method = "PingMaster";
+            message.method = "/master/helloWorld";
             message.serializeType = SerializeTypeConstant.TYPE_STRING;
             message.data = "hello world".getBytes();
             connect.writeAndFlush(message);

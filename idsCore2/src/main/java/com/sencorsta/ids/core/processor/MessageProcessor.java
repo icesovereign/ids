@@ -2,9 +2,13 @@ package com.sencorsta.ids.core.processor;
 
 import com.sencorsta.ids.core.config.ConfigGroup;
 import com.sencorsta.ids.core.config.GlobalConfig;
+import com.sencorsta.ids.core.entity.MethodProxy;
 import com.sencorsta.ids.core.net.protocol.RpcMessage;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.lang.reflect.Method;
+import java.util.Map;
 import java.util.concurrent.*;
 
 /**
@@ -26,6 +30,25 @@ public class MessageProcessor {
      * 监控线程
      */
     public static final ScheduledExecutorService MONITOR = new ScheduledThreadPoolExecutor(1, new IdsThreadFactory("IDS-MONITOR"));
+
+    /**
+     * 方法map
+     */
+    @Getter
+    private static final Map<String, MethodProxy> methodMap = new ConcurrentHashMap<>();
+    /**
+     * service map
+     */
+    @Getter
+    private static final Map<String, String> serviceMap = new ConcurrentHashMap<>();
+
+    public static void addMethod(String key, MethodProxy method) {
+        methodMap.putIfAbsent(key, method);
+    }
+
+    public static void addService(String key, String service) {
+        serviceMap.putIfAbsent(key, service);
+    }
 
     /**
      * 无论是什么消息全部塞到队列里 释放netty的io线程

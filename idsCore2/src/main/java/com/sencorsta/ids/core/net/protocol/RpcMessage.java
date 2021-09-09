@@ -4,6 +4,7 @@ import com.sencorsta.ids.core.config.GlobalConfig;
 import com.sencorsta.ids.core.constant.SerializeTypeConstant;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
+import lombok.Data;
 
 import java.util.Arrays;
 
@@ -12,6 +13,7 @@ import java.util.Arrays;
  * @description: RPC消息
  * @date 2019/6/12 17:19
  */
+@Data
 public class RpcMessage extends BaseMessage {
     /**
      * 序列化类型

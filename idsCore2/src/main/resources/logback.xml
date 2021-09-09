@@ -16,9 +16,9 @@
 
     <!--输出到文件-->
     <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${log.path}\${server.id}\console.log</file>
+        <file>${log.path}/${server.id}/console.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${log.path}\${server.id}/old/console.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>${log.path}/${server.id}/old/console.%d{yyyy-MM-dd}.log</fileNamePattern>
         </rollingPolicy>
         <encoder>
             <pattern>${log.pattern}</pattern>
@@ -27,9 +27,9 @@
 
     <!--报错 输出到文件-->
     <appender name="error" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${log.path}\${server.id}\error.log</file>
+        <file>${log.path}/${server.id}/error.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${log.path}\${server.id}/old/error.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>${log.path}/${server.id}/old/error.%d{yyyy-MM-dd}.log</fileNamePattern>
         </rollingPolicy>
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>ERROR</level>
@@ -41,30 +41,30 @@
 
     <!--第三方日志 输出到文件-->
     <appender name="other" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${log.path}\${server.id}\other.log</file>
+        <file>${log.path}/${server.id}/other.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${log.path}\${server.id}/old/other.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>${log.path}/${server.id}/old/other.%d{yyyy-MM-dd}.log</fileNamePattern>
         </rollingPolicy>
         <encoder>
             <pattern>${log.pattern}</pattern>
         </encoder>
     </appender>
 
-    <root level="trace">
+    <root level="${log.level:-info}">
         <appender-ref ref="console"/>
         <appender-ref ref="file"/>
         <appender-ref ref="error"/>
     </root>
-
     <logger name="io.netty">
-        <level value="info" />
-        <appender-ref ref="other" />
+        <level value="info"/>
+        <appender-ref ref="other"/>
         <appender-ref ref="error"/>
     </logger>
     <logger name="cn.hutool">
-        <level value="info" />
-        <appender-ref ref="other" />
+        <level value="${log.level:-info}"/>
+        <appender-ref ref="other"/>
         <appender-ref ref="error"/>
     </logger>
-
+    <!-- 移除logback默认输出 -->
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener"/>
 </configuration>

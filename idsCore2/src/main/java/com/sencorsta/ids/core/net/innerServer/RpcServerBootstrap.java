@@ -129,7 +129,7 @@ public class RpcServerBootstrap {
                         break;
                     }
                 } catch (Exception e) {
-                    log.trace("端口", j, "已被占用,查找新的" + "[" + serviceMin + "-" + serviceMax + "]" + "端口中...");
+                    log.trace("端口{}已被占用,查找新的[{}-{}]端口中...", j, serviceMin, serviceMax);
                 }
             }
             if (!isEnable) {

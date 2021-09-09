@@ -23,4 +23,10 @@ public class IdsResponse<T> {
      */
     T data;
 
+    public IdsResponse(T data) {
+        this.code = 0;
+        this.message = "ok";
+        this.data = data;
+    }
+
 }
