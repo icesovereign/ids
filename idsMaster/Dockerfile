@@ -6,7 +6,7 @@ ENTRYPOINT
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 RUN echo 'Asia/Shanghai' >/etc/timezone
 WORKDIR /app
-COPY target/*jar-with-dependencies.jar app.jar
+COPY target/ids-master.jar app.jar
 COPY conf /app/conf
 #COPY web /app/web
 EXPOSE 8020
