@@ -4,12 +4,17 @@ import com.sencorsta.ids.core.config.ConfigGroup;
 import com.sencorsta.ids.core.config.GlobalConfig;
 import com.sencorsta.ids.core.entity.MethodProxy;
 import com.sencorsta.ids.core.net.protocol.RpcMessage;
+import com.sencorsta.ids.core.net.protocol.RpcMessageLock;
+import com.sencorsta.utils.string.StringUtil;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 消息处理器
@@ -35,25 +40,34 @@ public class MessageProcessor {
      * 方法map
      */
     @Getter
-    private static final Map<String, MethodProxy> methodMap = new ConcurrentHashMap<>();
+    private static final Map<String, MethodProxy> METHOD_MAP = new ConcurrentHashMap<>();
     /**
      * service map
      */
     @Getter
-    private static final Map<String, String> serviceMap = new ConcurrentHashMap<>();
+    private static final Map<String, String> SERVICE_MAP = new ConcurrentHashMap<>();
 
     public static void addMethod(String key, MethodProxy method) {
-        methodMap.putIfAbsent(key, method);
+        METHOD_MAP.putIfAbsent(key, method);
     }
 
     public static void addService(String key, String service) {
-        serviceMap.putIfAbsent(key, service);
+        SERVICE_MAP.putIfAbsent(key, service);
     }
+
+    /**
+     * 响应信号通知键生成器
+     */
+    public static final AtomicLong UUID = new AtomicLong(System.currentTimeMillis());
+    /**
+     * 同步调用锁
+     */
+    public static Map<Long, RpcMessageLock> LOCKS = new ConcurrentHashMap<>();
 
     /**
      * 无论是什么消息全部塞到队列里 释放netty的io线程
      */
-    public static void addMessage(RpcMessage msg) {
+    public static void incomeMessage(RpcMessage msg) {
         try {
             EXECUTOR.execute(new MessageDispatcher(msg));
         } catch (RejectedExecutionException e) {
@@ -63,6 +77,35 @@ public class MessageProcessor {
             }
             INCOMING_MESSAGE_QUEUE.offer(msg);
         }
+    }
+
+    public static RpcMessage request(RpcMessage req) {
+        long reqId = UUID.incrementAndGet();
+        Lock lock = new ReentrantLock();
+        lock.lock();
+        try {
+            req.setMsgId(reqId);
+            Condition condition = lock.newCondition();
+            RpcMessageLock look = new RpcMessageLock(lock, condition);
+            LOCKS.put(reqId, look);
+            req.getChannel().writeAndFlush(req);
+            Integer time = GlobalConfig.instance().getInt("request.await", ConfigGroup.performance.getName(), 15000);
+            if (!condition.await(time, TimeUnit.MILLISECONDS)) {
+                log.trace("msg:{} condition timeout!", req.getMethod());
+                return null;
+            }
+            if (look.getMessage() == null) {
+                log.trace("msg:{} getMessage == null!", req.getMethod());
+                return null;
+            }
+            return look.getMessage();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        } finally {
+            lock.unlock();
+            LOCKS.remove(reqId);
+        }
+        return null;
     }
 
 

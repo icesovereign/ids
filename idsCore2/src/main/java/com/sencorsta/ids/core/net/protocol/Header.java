@@ -1,12 +1,14 @@
 package com.sencorsta.ids.core.net.protocol;
 
 import com.sencorsta.ids.core.config.GlobalConfig;
+import lombok.Data;
 
 /**
  * 通讯协议包头
  *
  * @author ICe
  */
+@Data
 public class Header {
 
     /**

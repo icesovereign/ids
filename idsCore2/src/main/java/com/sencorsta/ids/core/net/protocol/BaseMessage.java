@@ -1,14 +1,16 @@
 package com.sencorsta.ids.core.net.protocol;
 
 import io.netty.buffer.ByteBuf;
+import lombok.Data;
 
 /**
  * @description: 基本信息
  * @author ICe
  * @date 2019/6/12 17:18
  */
+@Data
 public abstract class BaseMessage implements Cloneable {
-    public Header header;
+    protected Header header;
     public Body body;
 
     public BaseMessage() {

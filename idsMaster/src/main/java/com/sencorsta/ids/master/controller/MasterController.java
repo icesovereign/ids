@@ -1,6 +1,5 @@
 package com.sencorsta.ids.master.controller;
 
-import cn.hutool.core.util.RandomUtil;
 import com.sencorsta.ids.core.entity.IdsRequest;
 import com.sencorsta.ids.core.entity.IdsResponse;
 import com.sencorsta.ids.core.entity.annotation.Autowired;
@@ -22,7 +21,17 @@ public class MasterController {
     private final MasterService masterService;
 
     @RequestMapping("/helloWorld")
-    public IdsResponse<String> helloWorld(IdsRequest<byte[]> request) throws InterruptedException {
+    public IdsResponse<String> helloWorld(IdsRequest<byte[]> request) {
+        return new IdsResponse<>(masterService.helloWorld(new String(request.getData())));
+    }
+
+    @RequestMapping("/sleep")
+    public IdsResponse<String> sleep(IdsRequest<byte[]> request) {
+        try {
+            Thread.sleep(30000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return new IdsResponse<>(masterService.helloWorld(new String(request.getData())));
     }
 }

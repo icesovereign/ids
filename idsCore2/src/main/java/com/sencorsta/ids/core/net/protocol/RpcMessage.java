@@ -18,20 +18,20 @@ public class RpcMessage extends BaseMessage {
     /**
      * 序列化类型
      */
-    public short serializeType;
+    private short serializeType;
     /**
      * 调用方法
      */
-    public String method;
-    public String userId;
-    public Long msgId;
-    public String errMsg;
+    private String method;
+    private String token;
+    private Long msgId;
+    private Integer errCode;
     /**
      * 数据
      */
-    public byte[] data;
+    private byte[] data;
 
-    public Channel channel;
+    private Channel channel;
 
     public RpcMessage(short typeProtocol) {
         this();
@@ -41,8 +41,8 @@ public class RpcMessage extends BaseMessage {
     public RpcMessage() {
         data = new byte[0];
         msgId = 0L;
-        errMsg = "";
-        userId = "";
+        errCode = 0;
+        token = "";
         method = "";
     }
 
@@ -58,9 +58,9 @@ public class RpcMessage extends BaseMessage {
         body = new Body(10);
         body.content.writeShort(serializeType);
         body.writeString(method);
-        body.writeString(userId);
+        body.writeString(token);
         body.content.writeLong(msgId);
-        body.writeString(errMsg);
+        body.content.writeInt(errCode);
         body.content.writeBytes(data);
         header.length = body.content.readableBytes();
     }
@@ -69,9 +69,9 @@ public class RpcMessage extends BaseMessage {
     public void decodeBody() {
         serializeType = body.content.readShort();
         method = body.readString();
-        userId = body.readString();
+        token = body.readString();
         msgId = body.content.readLong();
-        errMsg = body.readString();
+        errCode = body.content.readInt();
         data = new byte[body.content.readableBytes()];
         body.content.readBytes(data);
     }
@@ -80,12 +80,12 @@ public class RpcMessage extends BaseMessage {
         switch (serializeType) {
             case SerializeTypeConstant.TYPE_JSON:
             case SerializeTypeConstant.TYPE_STRING:
-                return "header:[" + header + "]" + " body:[" + "serializeType:" + serializeType + " method:" + method + " data:" + new String(data, GlobalConfig.UTF_8) + "]";
+                return "\nheader:[" + header + "]" + " \nbody:[" + "serializeType:" + serializeType + " method:" + method + " data:" + new String(data, GlobalConfig.UTF_8) + "]";
             case SerializeTypeConstant.TYPE_BYTEARR:
             case SerializeTypeConstant.TYPE_PROTOBUF:
-                return "header:[" + header + "]" + " body:[" + "serializeType:" + serializeType + " method:" + method + " data:" + Arrays.toString(data) + "]";
+                return "\nheader:[" + header + "]" + " \nbody:[" + "serializeType:" + serializeType + " method:" + method + " data:" + Arrays.toString(data) + "]";
             default:
-                return "header:[" + header + "]" + " body:[" + "serializeType:" + serializeType + " method:" + method + " data:" + "🐷未知协议🐷" + "]";
+                return "\nheader:[" + header + "]" + " \nbody:[" + "serializeType:" + serializeType + " method:" + method + " data:" + "🐷未知协议🐷" + "]";
         }
     }
 

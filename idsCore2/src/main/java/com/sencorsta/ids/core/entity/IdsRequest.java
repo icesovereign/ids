@@ -14,4 +14,8 @@ public class IdsRequest<T> {
      * 具体类型看消息类型来定 一般使用JSON字符串
      */
     T data;
+
+    public IdsRequest(T data) {
+        this.data = data;
+    }
 }

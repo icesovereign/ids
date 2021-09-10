@@ -3,6 +3,7 @@ package com.sencorsta.ids.core.net.protocol;
 import com.sencorsta.ids.core.config.GlobalConfig;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import lombok.Data;
 
 import java.util.Arrays;
 
@@ -11,6 +12,7 @@ import java.util.Arrays;
  *
  * @author ICe
  */
+@Data
 public final class Body {
 
     public ByteBuf content;

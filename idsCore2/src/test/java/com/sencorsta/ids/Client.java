@@ -7,6 +7,7 @@ import com.sencorsta.ids.core.net.handle.RpcClientChannelHandler;
 import com.sencorsta.ids.core.net.innerClient.RpcClientBootstrap;
 import com.sencorsta.ids.core.net.innerClient.RpcCodecFactory;
 import com.sencorsta.ids.core.net.protocol.RpcMessage;
+import com.sencorsta.ids.core.processor.MessageProcessor;
 import io.netty.channel.Channel;
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,10 +22,17 @@ public class Client {
         int count = 0;
         while (count < total) {
             RpcMessage message = new RpcMessage(ProtocolTypeConstant.TYPE_RPC_REQ);
-            message.method = "/master/helloWorld";
-            message.serializeType = SerializeTypeConstant.TYPE_STRING;
-            message.data = "hello world".getBytes();
-            connect.writeAndFlush(message);
+            message.setMethod("/master/sleep");
+            message.setSerializeType(SerializeTypeConstant.TYPE_STRING);
+            message.setData("hello world".getBytes());
+            message.setChannel(connect);
+
+            RpcMessage response = MessageProcessor.request(message);
+            if (response != null) {
+                log.info("response:{}", response.toStringPlus());
+            } else {
+                log.info("response:{}", "null");
+            }
             count++;
             //Thread.sleep(1);
         }

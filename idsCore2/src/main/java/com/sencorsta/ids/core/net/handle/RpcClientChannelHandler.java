@@ -1,6 +1,7 @@
 package com.sencorsta.ids.core.net.handle;
 
-import com.sencorsta.ids.core.config.GlobalConfig;
+import com.sencorsta.ids.core.net.protocol.RpcMessage;
+import com.sencorsta.ids.core.processor.MessageProcessor;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -26,7 +27,6 @@ public class RpcClientChannelHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
         log.trace("Client添加:" + ctx.channel());
-        ctx.channel().writeAndFlush("123123".getBytes(GlobalConfig.UTF_8));
     }
 
     @Override
@@ -36,8 +36,9 @@ public class RpcClientChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object packet) throws Exception {
-        log.trace("");
-        log.trace("Client收到消息:" + ctx.channel() + packet);
+        RpcMessage message = (RpcMessage) packet;
+        log.trace("Client收到消息:" + ctx.channel() + message.toStringPlus());
+        MessageProcessor.incomeMessage(message);
     }
 
 }

@@ -55,7 +55,7 @@ public final class IdsRpcDecoder extends ByteToMessageDecoder {
         in.resetReaderIndex();
         RpcMessage msg = new RpcMessage();
         msg.decode(in);
-        msg.channel = ctx.channel();
+        msg.setChannel(ctx.channel());
         packets.add(msg);
     }
 
