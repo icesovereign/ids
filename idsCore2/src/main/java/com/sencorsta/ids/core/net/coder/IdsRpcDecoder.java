@@ -45,7 +45,7 @@ public final class IdsRpcDecoder extends ByteToMessageDecoder {
             in.resetReaderIndex();
             return;
         }
-        if (GlobalConfig.isDebug) {
+        if (GlobalConfig.IS_DEBUG) {
             byte[] temp = new byte[in.readableBytes()];
             in.readBytes(temp);
             log.trace("收到数据:{}总长度:{}", Arrays.toString(temp), temp.length);

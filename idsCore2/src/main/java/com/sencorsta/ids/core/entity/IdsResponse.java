@@ -1,6 +1,7 @@
 package com.sencorsta.ids.core.entity;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 响应基础类
@@ -8,6 +9,7 @@ import lombok.Data;
  * @author daibin
  */
 @Data
+@NoArgsConstructor
 public class IdsResponse<T> {
     /**
      * 响应码
@@ -28,5 +30,25 @@ public class IdsResponse<T> {
         this.message = "ok";
         this.data = data;
     }
+
+    public IdsResponse(T data,ErrorCode errorCode) {
+        this.code = errorCode.getCode();
+        this.message = errorCode.getMsg();
+        this.data = data;
+    }
+
+//    public static IdsResponse<Object> error(ErrorCode errorCode) {
+//        IdsResponse<Object> idsResponse = new IdsResponse<>();
+//        idsResponse.code = errorCode.getCode();
+//        idsResponse.message = errorCode.getMsg();
+//        return idsResponse;
+//    }
+//
+//    public static IdsResponse<Object> success(T data) {
+//        IdsResponse<Object> idsResponse = new IdsResponse<>();
+//        idsResponse.code = errorCode.getCode();
+//        idsResponse.message = errorCode.getMsg();
+//        return idsResponse;
+//    }
 
 }

@@ -1,5 +1,11 @@
 package com.sencorsta.ids.master.controller;
 
+import com.sencorsta.ids.api.request.GetTotalServerRequest;
+import com.sencorsta.ids.api.request.JoinMasterRequest;
+import com.sencorsta.ids.api.request.PingMasterRequest;
+import com.sencorsta.ids.api.response.GetTotalServerResponse;
+import com.sencorsta.ids.api.response.JoinMasterResponse;
+import com.sencorsta.ids.api.response.PingMasterResponse;
 import com.sencorsta.ids.core.entity.IdsRequest;
 import com.sencorsta.ids.core.entity.IdsResponse;
 import com.sencorsta.ids.core.entity.annotation.Autowired;
@@ -33,5 +39,21 @@ public class MasterController {
             e.printStackTrace();
         }
         return new IdsResponse<>(masterService.helloWorld(new String(request.getData())));
+    }
+
+    @RequestMapping("/pingMaster")
+    public IdsResponse<PingMasterResponse> pingMaster(IdsRequest<PingMasterRequest> request) {
+        request.getData().setChannel(request.getChannel());
+        return masterService.pingMaster(request.getData());
+    }
+
+    @RequestMapping("/joinMaster")
+    public IdsResponse<JoinMasterResponse> joinMaster(IdsRequest<JoinMasterRequest> request) {
+        return masterService.joinMaster(request.getData());
+    }
+
+    @RequestMapping("/getTotalServer")
+    public IdsResponse<GetTotalServerResponse> getTotalServer(IdsRequest<GetTotalServerRequest> request) {
+        return masterService.getTotalServer(request.getData());
     }
 }

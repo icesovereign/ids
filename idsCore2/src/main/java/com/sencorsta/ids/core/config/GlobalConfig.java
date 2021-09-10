@@ -2,6 +2,8 @@ package com.sencorsta.ids.core.config;
 
 import cn.hutool.setting.GroupedMap;
 import cn.hutool.setting.Setting;
+import com.sencorsta.ids.core.entity.Server;
+import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.impl.StaticLoggerBinder;
@@ -24,11 +26,13 @@ public class GlobalConfig extends Setting {
     private static final String BASE_CONFIG_NAME = "idsServer.conf";
     public static Charset UTF_8 = StandardCharsets.UTF_8;
     public static Short SIGNATURE = 7777;
-    public static boolean isDebug = false;
+    public static boolean IS_DEBUG = false;
+    public static AttributeKey<Server> SERVER_KEY = AttributeKey.valueOf("SERVER_KEY");
 
     private static class SingletonHolder {
         private static final GlobalConfig INSTANCE = new GlobalConfig();
     }
+
     public static GlobalConfig instance() {
         return SingletonHolder.INSTANCE;
     }
@@ -51,17 +55,17 @@ public class GlobalConfig extends Setting {
         }
         baseConfig = new Setting(CONF_DIR + BASE_CONFIG_NAME, true);
         Boolean isAutoLoad = baseConfig.getBool("autoLoad", ConfigGroup.core.getName(), false);
-        baseConfig.autoLoad(isAutoLoad, (callBack) -> onConfModify(baseConfig,callBack));
+        baseConfig.autoLoad(isAutoLoad, (callBack) -> onConfModify(baseConfig, callBack));
         this.addSetting(baseConfig);
 
         Setting include = baseConfig.getSetting(ConfigGroup.include.getName());
         include.forEach((key, value) -> {
             Setting temp = new Setting(ROOT_DIR + value);
-            temp.autoLoad(isAutoLoad, (callBack) -> onConfModify(temp,callBack));
+            temp.autoLoad(isAutoLoad, (callBack) -> onConfModify(temp, callBack));
             this.addSetting(temp);
             includeConfig.put(key, temp);
         });
-        isDebug = getBool("server.debug", ConfigGroup.core.getName(), false);
+        IS_DEBUG = getBool("server.debug", ConfigGroup.core.getName(), false);
         System.setProperty("server.type", getStr("server.type", ConfigGroup.core.getName(), "default"));
         System.setProperty("log.home", getStr("log.home", ConfigGroup.core.getName(), "./log"));
         System.setProperty("log.level", getStr("log.level", ConfigGroup.core.getName(), "info"));
@@ -88,12 +92,12 @@ public class GlobalConfig extends Setting {
     /**
      * 配置变动会调用此方法
      *
-     * @param config 变动的配置
+     * @param config   变动的配置
      * @param callBack
      * @return 总配置
      */
     private Setting onConfModify(Setting config, Boolean callBack) {
-        log.debug("重新加载配置1{}, callBack:{}", config,callBack);
+        log.debug("重新加载配置1{}, callBack:{}", config, callBack);
         return this.addSetting(config);
     }
 

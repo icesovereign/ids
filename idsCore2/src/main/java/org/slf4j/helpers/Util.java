@@ -120,7 +120,7 @@ public final class Util {
     }
 
     static final public void report(String msg, Throwable t) {
-        if (GlobalConfig.isDebug) {
+        if (GlobalConfig.IS_DEBUG) {
             System.err.println(msg);
             System.err.println("Reported exception:");
             t.printStackTrace();
@@ -128,7 +128,7 @@ public final class Util {
     }
 
     static final public void report(String msg) {
-        if (GlobalConfig.isDebug) {
+        if (GlobalConfig.IS_DEBUG) {
             System.err.println("SLF4J: " + msg);
         }
     }

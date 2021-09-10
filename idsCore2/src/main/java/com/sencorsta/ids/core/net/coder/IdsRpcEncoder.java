@@ -19,7 +19,7 @@ public final class IdsRpcEncoder extends MessageToByteEncoder<RpcMessage> {
     @Override
     protected void encode(ChannelHandlerContext ctx, RpcMessage msg, ByteBuf out) throws Exception {
         msg.encode(out);
-        if (GlobalConfig.isDebug) {
+        if (GlobalConfig.IS_DEBUG) {
             out.resetReaderIndex();
             byte[] temp = new byte[out.readableBytes()];
             out.readBytes(temp);

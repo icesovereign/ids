@@ -28,7 +28,7 @@ public final class IdsWsDecoder extends MessageToMessageDecoder<BinaryWebSocketF
         if (in.readableBytes() < Header.SIZE) {
             return;
         }
-        if (GlobalConfig.isDebug) {
+        if (GlobalConfig.IS_DEBUG) {
             in.markReaderIndex();
             byte[] temp = new byte[in.readableBytes()];
             in.readBytes(temp);

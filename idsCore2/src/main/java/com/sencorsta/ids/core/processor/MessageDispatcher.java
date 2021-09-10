@@ -4,6 +4,10 @@ import cn.hutool.core.lang.Singleton;
 import cn.hutool.core.util.ClassUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
+import cn.hutool.json.JSONUtil;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sencorsta.ids.core.config.GlobalConfig;
 import com.sencorsta.ids.core.constant.ErrorCodeConstant;
 import com.sencorsta.ids.core.constant.ProtocolTypeConstant;
@@ -16,8 +20,12 @@ import com.sencorsta.ids.core.net.protocol.RpcMessageLock;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.ScheduledFuture;
@@ -36,7 +44,7 @@ public class MessageDispatcher implements Runnable {
     @Override
     public void run() {
         log.info("MessageDispatcher 开始处理消息{}", message.toStringPlus());
-        if (GlobalConfig.isDebug) {
+        if (GlobalConfig.IS_DEBUG) {
             long sTime = System.currentTimeMillis();
             String method = message.getMethod();
             ScheduledFuture<?> schedule = MessageProcessor.MONITOR.schedule(() -> {
@@ -99,8 +107,10 @@ public class MessageDispatcher implements Runnable {
         res.setMethod(message.getMethod());
         if (ObjectUtil.isNotNull(methodProxy)) {
             try {
-                IdsResponse<String> result = invoke(message, methodProxy);
-                res.setData(result.getData().getBytes());
+                IdsResponse<Object> result = invoke(message, methodProxy);
+                byte[] bytes = JSONUtil.toJsonStr(result).getBytes(StandardCharsets.UTF_8);
+                //fixme 这里如果用jackson会报错 byte[] bytes = new ObjectMapper().writeValueAsBytes(result);
+                res.setData(bytes);
             } catch (Exception e) {
                 res.setErrCode(ErrorCodeConstant.SYSTEM_ERROR.getCode());
                 log.error(e.getMessage(), e);
@@ -122,13 +132,40 @@ public class MessageDispatcher implements Runnable {
         }
     }
 
-    private IdsResponse<String> invoke(RpcMessage message, MethodProxy methodProxy) {
-        IdsRequest<byte[]> idsRequest = new IdsRequest<>(message.getData());
+    private IdsResponse<Object> invoke(RpcMessage message, MethodProxy methodProxy) throws IOException {
+        byte[] data = message.getData();
+
         Class<Object> clazz = ClassUtil.loadClass(methodProxy.getClassName());
-        final Method method = ClassUtil.getDeclaredMethod(clazz, methodProxy.getMethodName(), ClassUtil.getClasses(idsRequest));
+        final Method method = ClassUtil.getDeclaredMethod(clazz, methodProxy.getMethodName(), IdsRequest.class);
+
+        Object object = null;
+        Type genericReturnType = Arrays.stream(method.getGenericParameterTypes()).filter(o -> o instanceof ParameterizedType).findFirst().orElse(null);
+        if (ObjectUtil.isNotNull(genericReturnType)) {
+            Type type = Arrays.stream(((ParameterizedType) genericReturnType).getActualTypeArguments()).findFirst().orElse(null);
+            if (ObjectUtil.isNotNull(type)) {
+                object = new ObjectMapper().readValue(data, ClassUtil.loadClass(type.getTypeName()));
+            }
+        }
+        if (object == null) {
+            object = data;
+        }
         Object[] objects = getFields(clazz);
         Object obj = Singleton.get(clazz, objects);
+        IdsRequest<?> idsRequest = new IdsRequest<>(object);
+        idsRequest.setChannel(message.getChannel());
         return ReflectUtil.invoke(obj, method, idsRequest);
+    }
+
+    protected final <T> IdsResponse<T> getResponses(byte[] data) {
+        IdsResponse<T> res = null;
+        try {
+            TypeReference<IdsResponse<T>> type = new TypeReference<IdsResponse<T>>() {
+            };
+            res = new ObjectMapper().readValue(data, type);
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+        }
+        return res;
     }
 
     private Object[] getFields(Class<Object> clazz) {

@@ -23,7 +23,7 @@ public final class IdsWsEncoder extends MessageToMessageEncoder<RpcMessage> {
 		ByteBuf out=frame.content();
 		msg.encode(out);
 
-		if (GlobalConfig.isDebug) {
+		if (GlobalConfig.IS_DEBUG) {
 			out.markReaderIndex();
 			byte[] temp = new byte[out.readableBytes()];
 			out.readBytes(temp);

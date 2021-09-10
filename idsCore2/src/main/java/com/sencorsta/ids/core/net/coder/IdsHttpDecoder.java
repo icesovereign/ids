@@ -15,7 +15,7 @@ import java.util.List;
 public class IdsHttpDecoder extends HttpRequestDecoder {
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf buffer, List<Object> out) throws Exception {
-        if (GlobalConfig.isDebug) {
+        if (GlobalConfig.IS_DEBUG) {
             buffer.markReaderIndex();
             byte[] temp = new byte[buffer.readableBytes()];
             buffer.readBytes(temp);
