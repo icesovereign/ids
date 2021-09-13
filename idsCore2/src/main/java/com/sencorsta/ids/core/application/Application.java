@@ -5,6 +5,7 @@ import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.io.resource.ClassPathResource;
 import cn.hutool.core.io.unit.DataSizeUtil;
 import cn.hutool.core.lang.ClassScanner;
+import cn.hutool.core.lang.Singleton;
 import cn.hutool.core.util.ClassUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
@@ -12,6 +13,7 @@ import cn.hutool.system.SystemUtil;
 import com.google.common.collect.Lists;
 import com.sencorsta.ids.core.config.ConfigGroup;
 import com.sencorsta.ids.core.config.GlobalConfig;
+import com.sencorsta.ids.core.entity.IdsRequest;
 import com.sencorsta.ids.core.entity.MethodProxy;
 import com.sencorsta.ids.core.entity.annotation.Component;
 import com.sencorsta.ids.core.entity.annotation.Controller;
@@ -29,11 +31,12 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -142,11 +145,25 @@ public abstract class Application {
                     RequestMapping annotation = AnnotationUtil.getAnnotation(c, RequestMapping.class);
                     String url = annotation == null ? "" : annotation.value();
                     log.debug("注册 Controller -> {}", c.getName());
+                    Class<Object> clazz = ClassUtil.loadClass(c.getName());
                     Arrays.stream(c.getMethods()).forEach(m -> {
                         RequestMapping fun = AnnotationUtil.getAnnotation(m, RequestMapping.class);
                         if (ObjectUtil.isNotNull(fun)) {
-                            MessageProcessor.addMethod(url + fun.value(), new MethodProxy(c.getName(), m.getName()));
-                            log.trace("加载 RequestMapping -> {}", url + fun.value());
+                            Type genericReturnType = Arrays.stream(m.getGenericParameterTypes()).filter(o -> o instanceof ParameterizedType).findFirst().orElse(null);
+                            String typeName = "";
+                            if (ObjectUtil.isNotNull(genericReturnType)) {
+                                Type type = Arrays.stream(((ParameterizedType) genericReturnType).getActualTypeArguments()).findFirst().orElse(null);
+                                if (ObjectUtil.isNotNull(type)) {
+                                    typeName = type.getTypeName();
+                                    ClassUtil.loadClass(typeName);
+                                }
+                            }
+                            final Method method = ClassUtil.getDeclaredMethod(clazz, m.getName(), IdsRequest.class);
+                            Class<Object> valueType = ClassUtil.loadClass(typeName);
+                            Object[] objects = getFields(clazz);
+                            Object obj = Singleton.get(clazz, objects);
+                            MessageProcessor.addMethod(url + fun.value(), new MethodProxy(obj, method, valueType));
+                            log.trace("加载 RequestMapping -> {} type:{}", url + fun.value(), typeName);
                         }
                     });
                 } else if (AnnotationUtil.getAnnotation(c, Service.class) != null) {
@@ -165,6 +182,19 @@ public abstract class Application {
                 log.error(e.getMessage(), e);
             }
         });
+    }
+
+    private Object[] getFields(Class<Object> clazz) {
+        Field[] declaredFields = clazz.getDeclaredFields();
+        return Arrays.stream(declaredFields).map(e -> {
+            String s = MessageProcessor.getSERVICE_MAP().get(e.getType().getName());
+            if (ObjectUtil.isNotNull(s)) {
+                Class<Object> objectClass = ClassUtil.loadClass(s);
+                Object[] fields = getFields(objectClass);
+                return Singleton.get(objectClass, fields);
+            }
+            return null;
+        }).filter(Objects::nonNull).toArray();
     }
 
     AtomicInteger processCount = new AtomicInteger();

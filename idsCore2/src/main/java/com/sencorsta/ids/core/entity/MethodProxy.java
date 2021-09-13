@@ -1,6 +1,7 @@
 package com.sencorsta.ids.core.entity;
 
 
+import cn.hutool.core.util.ClassUtil;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -14,6 +15,10 @@ import java.lang.reflect.Method;
 @AllArgsConstructor
 @Data
 public class MethodProxy {
-    String className;
-    String methodName;
+//    String className;
+//    String methodName;
+//    String parameterName;
+    Object obj;
+    Method method;
+    Class<Object> valueType;
 }

@@ -24,7 +24,7 @@ public class Client {
         GlobalConfig.IS_DEBUG = false;
         RpcClientBootstrap bootstrap = new RpcClientBootstrap("test", new RpcCodecFactory(new RpcClientChannelHandler()));
         Channel connect = bootstrap.connect("127.0.0.1", 10001);
-        int total = 1;
+        int total = 2;
         int count = 0;
         while (count < total) {
             RpcMessage message = new RpcMessage(ProtocolTypeConstant.TYPE_RPC_REQ);

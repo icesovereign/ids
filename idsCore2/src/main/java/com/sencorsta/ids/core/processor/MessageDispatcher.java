@@ -1,16 +1,11 @@
 package com.sencorsta.ids.core.processor;
 
-import cn.hutool.core.lang.Singleton;
-import cn.hutool.core.util.ClassUtil;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.ReflectUtil;
-import cn.hutool.json.JSONUtil;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sencorsta.ids.core.config.GlobalConfig;
 import com.sencorsta.ids.core.constant.ErrorCodeConstant;
 import com.sencorsta.ids.core.constant.ProtocolTypeConstant;
+import com.sencorsta.ids.core.entity.ErrorCode;
 import com.sencorsta.ids.core.entity.IdsRequest;
 import com.sencorsta.ids.core.entity.IdsResponse;
 import com.sencorsta.ids.core.entity.MethodProxy;
@@ -20,14 +15,8 @@ import com.sencorsta.ids.core.net.protocol.RpcMessageLock;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
-import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Objects;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -107,9 +96,8 @@ public class MessageDispatcher implements Runnable {
         res.setMethod(message.getMethod());
         if (ObjectUtil.isNotNull(methodProxy)) {
             try {
-                IdsResponse<Object> result = invoke(message, methodProxy);
-                byte[] bytes = JSONUtil.toJsonStr(result).getBytes(StandardCharsets.UTF_8);
-                //fixme 这里如果用jackson会报错 byte[] bytes = new ObjectMapper().writeValueAsBytes(result);
+                Object result = invoke(message, methodProxy);
+                byte[] bytes = jsonMapper.writeValueAsBytes(result);
                 res.setData(bytes);
             } catch (Exception e) {
                 res.setErrCode(ErrorCodeConstant.SYSTEM_ERROR.getCode());
@@ -118,6 +106,7 @@ public class MessageDispatcher implements Runnable {
         } else {
             res.setErrCode(ErrorCodeConstant.NOT_FIND.getCode());
         }
+        log.info(res.toStringPlus());
         message.getChannel().writeAndFlush(res);
     }
 
@@ -132,52 +121,26 @@ public class MessageDispatcher implements Runnable {
         }
     }
 
-    private IdsResponse<Object> invoke(RpcMessage message, MethodProxy methodProxy) throws IOException {
+    private static final ObjectMapper jsonMapper = new ObjectMapper();
+
+    private Object invoke(RpcMessage message, MethodProxy methodProxy) throws Exception {
         byte[] data = message.getData();
-
-        Class<Object> clazz = ClassUtil.loadClass(methodProxy.getClassName());
-        final Method method = ClassUtil.getDeclaredMethod(clazz, methodProxy.getMethodName(), IdsRequest.class);
-
-        Object object = null;
-        Type genericReturnType = Arrays.stream(method.getGenericParameterTypes()).filter(o -> o instanceof ParameterizedType).findFirst().orElse(null);
-        if (ObjectUtil.isNotNull(genericReturnType)) {
-            Type type = Arrays.stream(((ParameterizedType) genericReturnType).getActualTypeArguments()).findFirst().orElse(null);
-            if (ObjectUtil.isNotNull(type)) {
-                object = new ObjectMapper().readValue(data, ClassUtil.loadClass(type.getTypeName()));
-            }
-        }
+        final Method method = methodProxy.getMethod();
+        Class<Object> valueType = methodProxy.getValueType();
+        Object object = jsonMapper.readValue(data, valueType);
         if (object == null) {
             object = data;
         }
-        Object[] objects = getFields(clazz);
-        Object obj = Singleton.get(clazz, objects);
         IdsRequest<?> idsRequest = new IdsRequest<>(object);
         idsRequest.setChannel(message.getChannel());
-        return ReflectUtil.invoke(obj, method, idsRequest);
-    }
-
-    protected final <T> IdsResponse<T> getResponses(byte[] data) {
-        IdsResponse<T> res = null;
         try {
-            TypeReference<IdsResponse<T>> type = new TypeReference<IdsResponse<T>>() {
-            };
-            res = new ObjectMapper().readValue(data, type);
-        } catch (IOException e) {
-            log.error(e.getMessage(), e);
-        }
-        return res;
-    }
-
-    private Object[] getFields(Class<Object> clazz) {
-        Field[] declaredFields = clazz.getDeclaredFields();
-        return Arrays.stream(declaredFields).map(e -> {
-            String s = MessageProcessor.getSERVICE_MAP().get(e.getType().getName());
-            if (ObjectUtil.isNotNull(s)) {
-                Class<Object> objectClass = ClassUtil.loadClass(s);
-                Object[] fields = getFields(objectClass);
-                return Singleton.get(objectClass, fields);
+            return method.invoke(methodProxy.getObj(), idsRequest);
+        } catch (Exception exception) {
+            if (exception instanceof InvocationTargetException) {
+                return new IdsResponse<>(null, (ErrorCode) ((InvocationTargetException) exception).getTargetException());
+            } else {
+                throw exception;
             }
-            return null;
-        }).filter(Objects::nonNull).toArray();
+        }
     }
 }

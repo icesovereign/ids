@@ -7,5 +7,4 @@ import lombok.Data;
  */
 @Data
 public class PingMasterResponse {
-    private String nimaskId = "123";
 }

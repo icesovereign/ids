@@ -7,6 +7,7 @@ import com.sencorsta.ids.api.request.PingMasterRequest;
 import com.sencorsta.ids.api.response.GetTotalServerResponse;
 import com.sencorsta.ids.api.response.JoinMasterResponse;
 import com.sencorsta.ids.api.response.PingMasterResponse;
+import com.sencorsta.ids.core.entity.ErrorCode;
 import com.sencorsta.ids.core.entity.IdsResponse;
 
 /**
@@ -27,7 +28,7 @@ public interface MasterService {
      * @param data
      * @return
      */
-    IdsResponse<PingMasterResponse> pingMaster(PingMasterRequest data);
+    IdsResponse<PingMasterResponse> pingMaster(PingMasterRequest data) throws ErrorCode;
 
     /**
      * 加入master

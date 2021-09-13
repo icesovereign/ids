@@ -67,4 +67,7 @@ public class Server {
         return buff.toString();
     }
 
+    public String getInfo() {
+        return sid + " ping : " + host + ":" + port + " 内存占用:" + (maxMemory - freeMemory) + "/" + maxMemory;
+    }
 }

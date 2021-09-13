@@ -6,6 +6,7 @@ import com.sencorsta.ids.api.request.PingMasterRequest;
 import com.sencorsta.ids.api.response.GetTotalServerResponse;
 import com.sencorsta.ids.api.response.JoinMasterResponse;
 import com.sencorsta.ids.api.response.PingMasterResponse;
+import com.sencorsta.ids.core.entity.ErrorCode;
 import com.sencorsta.ids.core.entity.IdsRequest;
 import com.sencorsta.ids.core.entity.IdsResponse;
 import com.sencorsta.ids.core.entity.annotation.Autowired;
@@ -42,7 +43,7 @@ public class MasterController {
     }
 
     @RequestMapping("/pingMaster")
-    public IdsResponse<PingMasterResponse> pingMaster(IdsRequest<PingMasterRequest> request) {
+    public IdsResponse<PingMasterResponse> pingMaster(IdsRequest<PingMasterRequest> request) throws ErrorCode {
         request.getData().setChannel(request.getChannel());
         return masterService.pingMaster(request.getData());
     }

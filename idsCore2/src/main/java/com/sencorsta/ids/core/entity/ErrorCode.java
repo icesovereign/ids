@@ -8,7 +8,7 @@ import lombok.Data;
  */
 @Data
 @AllArgsConstructor
-public class ErrorCode {
+public class ErrorCode extends Exception {
     private Integer code;
     private String msg;
 }

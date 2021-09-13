@@ -37,16 +37,15 @@ public class MasterServiceImpl implements MasterService {
     }
 
     @Override
-    public IdsResponse<PingMasterResponse> pingMaster(PingMasterRequest data) {
+    public IdsResponse<PingMasterResponse> pingMaster(PingMasterRequest data) throws ErrorCode {
         PingMasterResponse pingMasterResponse = new PingMasterResponse();
         Server server = data.getChannel().attr(GlobalConfig.SERVER_KEY).get();
         if (server == null) {
-            return new IdsResponse<>(pingMasterResponse, ErrorCodeConstant.NOT_FIND);
+            throw ErrorCodeConstant.NOT_FIND;
         }
         int freeMemory = data.getFreeMemory();
         server.setFreeMemory(freeMemory);
-//        Out.trace(server.sid, " ping : ", server.backHost + ":", server.backPort, " 内存占用:",
-//                server.maxMemory - server.freeMemory, "/", server.maxMemory);
+        log.trace(server.getInfo());
         return new IdsResponse<>(pingMasterResponse);
     }
 
