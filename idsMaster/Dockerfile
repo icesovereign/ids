@@ -1,4 +1,5 @@
 FROM openjdk:11.0.11-jre-slim
+
 RUN mkdir -p /app/conf/
 RUN mkdir -p /app/log/
 VOLUME /app/log
