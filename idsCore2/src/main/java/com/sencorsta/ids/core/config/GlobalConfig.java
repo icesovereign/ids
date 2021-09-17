@@ -1,14 +1,16 @@
 package com.sencorsta.ids.core.config;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.util.ContextInitializer;
+import ch.qos.logback.core.joran.spi.JoranException;
 import cn.hutool.setting.GroupedMap;
 import cn.hutool.setting.Setting;
 import com.sencorsta.ids.core.entity.Server;
 import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.impl.StaticLoggerBinder;
 
-import java.io.File;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
@@ -22,8 +24,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author daibin
  */
 public class GlobalConfig extends Setting {
-    Logger log = LoggerFactory.getLogger(GlobalConfig.class);
-    private static final String BASE_CONFIG_NAME = "idsServer.conf";
+    private static Logger log = LoggerFactory.getLogger(GlobalConfig.class);
+    private static final String BASE_CONFIG_NAME = "ids-server.conf";
     public static Charset UTF_8 = StandardCharsets.UTF_8;
     public static Short SIGNATURE = 7777;
     public static boolean IS_DEBUG = false;
@@ -39,8 +41,6 @@ public class GlobalConfig extends Setting {
 
     private Setting baseConfig;
     private final Map<String, Setting> includeConfig = new ConcurrentHashMap<>();
-    public final static String ROOT_DIR = System.getProperty("user.dir") + File.separator;
-    public final static String CONF_DIR = ROOT_DIR + "conf" + File.separator;
 
     private boolean isInit = false;
 
@@ -49,18 +49,18 @@ public class GlobalConfig extends Setting {
         init();
     }
 
-    private void init() {
+    private synchronized void init() {
         if (isInit) {
             return;
         }
-        baseConfig = new Setting(CONF_DIR + BASE_CONFIG_NAME, true);
+        baseConfig = new Setting(loadResource(BASE_CONFIG_NAME), charset, false);
         Boolean isAutoLoad = baseConfig.getBool("autoLoad", ConfigGroup.core.getName(), false);
         baseConfig.autoLoad(isAutoLoad, (callBack) -> onConfModify(baseConfig, callBack));
         this.addSetting(baseConfig);
 
         Setting include = baseConfig.getSetting(ConfigGroup.include.getName());
         include.forEach((key, value) -> {
-            Setting temp = new Setting(ROOT_DIR + value);
+            Setting temp = new Setting(loadResource(value), charset, false);
             temp.autoLoad(isAutoLoad, (callBack) -> onConfModify(temp, callBack));
             this.addSetting(temp);
             includeConfig.put(key, temp);
@@ -69,9 +69,28 @@ public class GlobalConfig extends Setting {
         System.setProperty("server.type", getStr("server.type", ConfigGroup.core.getName(), "default"));
         System.setProperty("log.home", getStr("log.home", ConfigGroup.core.getName(), "./log"));
         System.setProperty("log.level", getStr("log.level", ConfigGroup.core.getName(), "info"));
-        StaticLoggerBinder.reset();
-        log = LoggerFactory.getLogger(GlobalConfig.class);
+        reloadLogger();
         isInit = true;
+    }
+
+    private void reloadLogger() {
+        try {
+            final LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+            ContextInitializer ci = new ContextInitializer(loggerContext);
+            URL url = ci.findURLOfDefaultConfigurationFile(true);
+            loggerContext.reset();
+            ci.configureByResource(url);
+        } catch (JoranException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private URL loadResource(String name) {
+        final URL resource = this.getClass().getClassLoader().getResource(name);
+        if (resource == null) {
+            throw new RuntimeException("配置缺失：" + name);
+        }
+        return resource;
     }
 
     public void printValue() {

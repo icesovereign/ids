@@ -60,8 +60,7 @@ public class SSLHandlerProvider {
         KeyStore ks = null;
         InputStream inputStream = null;
         try {
-            String property = System.getProperty("user.dir");
-            inputStream = new FileInputStream(property + "/conf/" + KEYSTORE);
+            inputStream = SSLHandlerProvider.class.getClassLoader().getResourceAsStream(KEYSTORE);;
             ks = KeyStore.getInstance(KEYSTORE_TYPE);
             ks.load(inputStream, KEYSTORE_PASSWORD.toCharArray());
         } catch (IOException e) {
@@ -96,14 +95,12 @@ public class SSLHandlerProvider {
 
     public static void initSSLContext2() {
         try {
-
-            String property = System.getProperty("user.dir");
-            String name = property + "/conf/" + "sencorsta.com+5.pem";
-            FileInputStream keyCertChainInputStream = new FileInputStream(name);
-            String nameKey = property + "/conf/" + "sencorsta.com+5-key.pem";
-            FileInputStream keyInputStream = new FileInputStream(nameKey);
-            serverSSLContext2 = SslContextBuilder.forServer(keyCertChainInputStream,
-                    keyInputStream).build();
+            final String name = "sencorsta.com+5.pem";
+            final String nameKey = "sencorsta.com+5-key.pem";
+            final ClassLoader classLoader = SSLHandlerProvider.class.getClassLoader();
+            InputStream keyCertChainInputStream = classLoader.getResourceAsStream(name);
+            InputStream keyInputStream = classLoader.getResourceAsStream(nameKey);
+            serverSSLContext2 = SslContextBuilder.forServer(keyCertChainInputStream, keyInputStream).build();
             log.info("HTTPS 证书加载成功 --> " + name);
             log.info("HTTPS 私钥加载成功 --> " + nameKey);
             //临时生成一个证书

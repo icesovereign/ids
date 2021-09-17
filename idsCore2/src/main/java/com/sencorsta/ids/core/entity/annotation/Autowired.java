@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
  *
  * @author daibin
  */
-@Target({ElementType.CONSTRUCTOR})
+@Target({ElementType.CONSTRUCTOR, ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Autowired {
     String value() default "";

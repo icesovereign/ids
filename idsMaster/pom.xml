@@ -22,57 +22,25 @@
     <dependencies>
         <dependency>
             <groupId>com.sencorsta</groupId>
-            <artifactId>idsCommon</artifactId>
-            <version>2.0-SNAPSHOT</version>
+            <artifactId>ids-common</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
+
     <build>
         <finalName>ids-master</finalName>
-        <sourceDirectory>src/main/java</sourceDirectory>
-        <testSourceDirectory>src/test/java</testSourceDirectory>
         <plugins>
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <appendAssemblyId>false</appendAssemblyId>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                    <archive>
-                        <manifest>
-                            <!-- 此处指定main方法入口的class -->
-                            <mainClass>com.sencorsta.ids.master.IdsMasterMain</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>make-assembly</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>assembly</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
             <!-- Jib -->
-
             <plugin>
                 <groupId>com.google.cloud.tools</groupId>
                 <artifactId>jib-maven-plugin</artifactId>
                 <configuration>
                     <to>
-                        <image>com.sencorsta/ids-master</image>
+                        <image>sencorsta.com/ids-master</image>
                     </to>
-                    <extraDirectories>
-                        <paths>
-                            <path>
-                                <from>conf</from>
-                                <into>/app/conf</into>
-                            </path>
-                        </paths>
-                    </extraDirectories>
+<!--
                     <containerizingMode>packaged</containerizingMode>
+-->
                     <container>
                         <workingDirectory>/app</workingDirectory>
                         <creationTime>USE_CURRENT_TIMESTAMP</creationTime>

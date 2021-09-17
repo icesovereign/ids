@@ -11,6 +11,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.system.SystemUtil;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.sencorsta.ids.core.config.ConfigGroup;
 import com.sencorsta.ids.core.config.GlobalConfig;
 import com.sencorsta.ids.core.entity.IdsRequest;
@@ -139,47 +140,89 @@ public abstract class Application {
             Annotation annotation = Arrays.stream(annotations).filter(o -> o.annotationType().isAnnotationPresent(Component.class)).findAny().orElse(null);
             return annotation != null;
         });
+        // 解析依赖关系，临时先component service，后controller
+        Set<Class<?>> services = Sets.newHashSet();
+        Set<Class<?>> controllers = Sets.newHashSet();
+        Set<Class<?>> components = Sets.newHashSet();
         classes.forEach(c -> {
             try {
                 if (AnnotationUtil.getAnnotation(c, Controller.class) != null) {
-                    RequestMapping annotation = AnnotationUtil.getAnnotation(c, RequestMapping.class);
-                    String url = annotation == null ? "" : annotation.value();
-                    log.debug("注册 Controller -> {}", c.getName());
-                    Class<Object> clazz = ClassUtil.loadClass(c.getName());
-                    Arrays.stream(c.getMethods()).forEach(m -> {
-                        RequestMapping fun = AnnotationUtil.getAnnotation(m, RequestMapping.class);
-                        if (ObjectUtil.isNotNull(fun)) {
-                            Type genericReturnType = Arrays.stream(m.getGenericParameterTypes()).filter(o -> o instanceof ParameterizedType).findFirst().orElse(null);
-                            String typeName = "";
-                            if (ObjectUtil.isNotNull(genericReturnType)) {
-                                Type type = Arrays.stream(((ParameterizedType) genericReturnType).getActualTypeArguments()).findFirst().orElse(null);
-                                if (ObjectUtil.isNotNull(type)) {
-                                    typeName = type.getTypeName();
-                                    ClassUtil.loadClass(typeName);
-                                }
-                            }
-                            final Method method = ClassUtil.getDeclaredMethod(clazz, m.getName(), IdsRequest.class);
-                            Class<Object> valueType = ClassUtil.loadClass(typeName);
-                            Object[] objects = getFields(clazz);
-                            Object obj = Singleton.get(clazz, objects);
-                            MessageProcessor.addMethod(url + fun.value(), new MethodProxy(obj, method, valueType));
-                            log.trace("加载 RequestMapping -> {} type:{}", url + fun.value(), typeName);
-                        }
-                    });
+                    controllers.add(c);
                 } else if (AnnotationUtil.getAnnotation(c, Service.class) != null) {
-                    Class<?>[] interfaces = c.getInterfaces();
-                    if (ObjectUtil.isNotEmpty(interfaces)) {
-                        Arrays.stream(interfaces).forEach(i -> {
-                            MessageProcessor.addService(i.getName(), c.getName());
-                            log.trace("注册 Service {} -> {}", i.getName(), c.getName());
-                        });
-                    }
+                    services.add(c);
                 } else {
-                    MessageProcessor.addService(c.getName(), c.getName());
-                    log.trace("注册 Component {} -> {}", c.getName(), c.getName());
+                    components.add(c);
                 }
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
+            }
+        });
+
+        components.forEach(it->{
+            try {
+                processComponent(it);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+        });
+
+        services.forEach(it->{
+            try {
+                processService(it);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+        });
+
+        controllers.forEach(it->{
+            try {
+                processController(it);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+        });
+
+
+    }
+
+    private void processComponent(Class<?> c) {
+        MessageProcessor.addService(c.getName(), c.getName());
+        log.trace("注册 Component {} -> {}", c.getName(), c.getName());
+    }
+
+    private void processService(Class<?> c) {
+        Class<?>[] interfaces = c.getInterfaces();
+        if (ObjectUtil.isNotEmpty(interfaces)) {
+            Arrays.stream(interfaces).forEach(i -> {
+                MessageProcessor.addService(i.getName(), c.getName());
+                log.trace("注册 Service {} -> {}", i.getName(), c.getName());
+            });
+        }
+    }
+
+    private void processController(Class<?> c) {
+        RequestMapping annotation = AnnotationUtil.getAnnotation(c, RequestMapping.class);
+        String url = annotation == null ? "" : annotation.value();
+        log.debug("注册 Controller -> {}", c.getName());
+        Class<Object> clazz = ClassUtil.loadClass(c.getName());
+        Arrays.stream(c.getMethods()).forEach(m -> {
+            RequestMapping fun = AnnotationUtil.getAnnotation(m, RequestMapping.class);
+            if (ObjectUtil.isNotNull(fun)) {
+                Type genericReturnType = Arrays.stream(m.getGenericParameterTypes()).filter(o -> o instanceof ParameterizedType).findFirst().orElse(null);
+                String typeName = "";
+                if (ObjectUtil.isNotNull(genericReturnType)) {
+                    Type type = Arrays.stream(((ParameterizedType) genericReturnType).getActualTypeArguments()).findFirst().orElse(null);
+                    if (ObjectUtil.isNotNull(type)) {
+                        typeName = type.getTypeName();
+                        ClassUtil.loadClass(typeName);
+                    }
+                }
+                final Method method = ClassUtil.getDeclaredMethod(clazz, m.getName(), IdsRequest.class);
+                Class<Object> valueType = ClassUtil.loadClass(typeName);
+                Object[] objects = getFields(clazz);
+                Object obj = Singleton.get(clazz, objects);
+                MessageProcessor.addMethod(url + fun.value(), new MethodProxy(obj, method, valueType));
+                log.trace("加载 RequestMapping -> {} type:{}", url + fun.value(), typeName);
             }
         });
     }
