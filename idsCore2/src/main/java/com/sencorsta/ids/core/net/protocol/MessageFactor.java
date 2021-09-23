@@ -6,7 +6,7 @@ import com.sencorsta.ids.core.constant.SerializeTypeConstant;
 /**
  * 定义一些常用的方法
  *
- * @author daibin
+ * @author ICe
  */
 public class MessageFactor {
     public static RpcMessage newResMessage() {

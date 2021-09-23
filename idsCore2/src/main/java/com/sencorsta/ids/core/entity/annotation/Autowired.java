@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 /**
  * 自动加载
  *
- * @author daibin
+ * @author ICe
  */
 @Target({ElementType.CONSTRUCTOR, ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)

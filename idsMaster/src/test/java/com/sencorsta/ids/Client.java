@@ -1,17 +1,20 @@
 package com.sencorsta.ids;
 
-import com.fasterxml.jackson.annotation.JacksonAnnotation;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sencorsta.ids.api.request.PingMasterRequest;
+import com.sencorsta.ids.core.application.master.request.PingMasterRequest;
+import com.sencorsta.ids.core.application.master.response.PingMasterResponse;
 import com.sencorsta.ids.core.config.GlobalConfig;
 import com.sencorsta.ids.core.constant.ProtocolTypeConstant;
 import com.sencorsta.ids.core.constant.SerializeTypeConstant;
+import com.sencorsta.ids.core.entity.IdsResponse;
 import com.sencorsta.ids.core.net.handle.RpcClientChannelHandler;
 import com.sencorsta.ids.core.net.innerClient.RpcClientBootstrap;
 import com.sencorsta.ids.core.net.innerClient.RpcCodecFactory;
 import com.sencorsta.ids.core.net.protocol.RpcMessage;
 import com.sencorsta.ids.core.processor.MessageProcessor;
+import com.sencorsta.utils.object.Jsons;
 import io.netty.channel.Channel;
 import lombok.extern.slf4j.Slf4j;
 
@@ -40,7 +43,9 @@ public class Client {
                 if (response.getErrCode() > 0) {
                     log.info("response error:{}", response.getErrCode());
                 } else {
-                    log.info("response:{}", new String(response.getData()));
+                    IdsResponse<PingMasterResponse> pingMasterResponseIdsResponse = Jsons.toBean(response.getData(), new TypeReference<IdsResponse<PingMasterResponse>>() {
+                    });
+                    log.info("response:{}", pingMasterResponseIdsResponse.getData());
                 }
             } else {
                 log.info("response:{}", "null");

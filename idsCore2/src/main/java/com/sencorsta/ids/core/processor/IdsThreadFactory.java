@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * 自定义线程工厂 主要为了标记名称
  *
- * @author daibin
+ * @author ICe
  */
 public class IdsThreadFactory implements ThreadFactory {
     private static final AtomicInteger poolNumber = new AtomicInteger(1);

@@ -12,6 +12,7 @@ import com.sencorsta.ids.core.entity.MethodProxy;
 import com.sencorsta.ids.core.net.protocol.MessageFactor;
 import com.sencorsta.ids.core.net.protocol.RpcMessage;
 import com.sencorsta.ids.core.net.protocol.RpcMessageLock;
+import com.sencorsta.utils.object.Jsons;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * 消息分发器
  *
- * @author daibin
+ * @author ICe
  */
 @Slf4j
 @AllArgsConstructor
@@ -97,13 +98,14 @@ public class MessageDispatcher implements Runnable {
         if (ObjectUtil.isNotNull(methodProxy)) {
             try {
                 Object result = invoke(message, methodProxy);
-                byte[] bytes = jsonMapper.writeValueAsBytes(result);
+                byte[] bytes = Jsons.mapper.writeValueAsBytes(result);
                 res.setData(bytes);
             } catch (Exception e) {
                 res.setErrCode(ErrorCodeConstant.SYSTEM_ERROR.getCode());
                 log.error(e.getMessage(), e);
             }
         } else {
+            log.debug("没有找到对应的处理方法:{}", message.getMethod());
             res.setErrCode(ErrorCodeConstant.NOT_FIND.getCode());
         }
         log.info(res.toStringPlus());
@@ -121,13 +123,11 @@ public class MessageDispatcher implements Runnable {
         }
     }
 
-    private static final ObjectMapper jsonMapper = new ObjectMapper();
-
     private Object invoke(RpcMessage message, MethodProxy methodProxy) throws Exception {
         byte[] data = message.getData();
         final Method method = methodProxy.getMethod();
-        Class<Object> valueType = methodProxy.getValueType();
-        Object object = jsonMapper.readValue(data, valueType);
+        Class<?> valueType = methodProxy.getValueType();
+        Object object = Jsons.toBean(data, valueType);
         if (object == null) {
             object = data;
         }
@@ -137,7 +137,12 @@ public class MessageDispatcher implements Runnable {
             return method.invoke(methodProxy.getObj(), idsRequest);
         } catch (Exception exception) {
             if (exception instanceof InvocationTargetException) {
-                return new IdsResponse<>(null, (ErrorCode) ((InvocationTargetException) exception).getTargetException());
+                Throwable targetException = ((InvocationTargetException) exception).getTargetException();
+                if (targetException instanceof ErrorCode) {
+                    return new IdsResponse<>(null, (ErrorCode) targetException);
+                } else {
+                    throw exception;
+                }
             } else {
                 throw exception;
             }

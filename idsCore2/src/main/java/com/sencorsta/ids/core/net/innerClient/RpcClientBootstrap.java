@@ -42,7 +42,7 @@ public class RpcClientBootstrap {
             future.awaitUninterruptibly(3, TimeUnit.SECONDS);
             if (!future.isSuccess()) {
                 if (future.cause() != null) {
-                    log.trace("连接服务器出错:", future.cause().getMessage());
+                    log.trace("连接服务器出错:{}", future.cause().getMessage());
                 }
                 return null;
             }

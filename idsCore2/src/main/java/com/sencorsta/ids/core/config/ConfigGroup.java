@@ -7,7 +7,7 @@ import lombok.Getter;
 /**
  * 配置的分类枚举
  *
- * @author daibin
+ * @author ICe
  */
 @AllArgsConstructor
 public enum ConfigGroup {

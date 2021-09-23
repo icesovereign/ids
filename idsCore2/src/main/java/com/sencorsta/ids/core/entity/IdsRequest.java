@@ -6,7 +6,7 @@ import lombok.Data;
 /**
  * 请求基础类
  *
- * @author daibin
+ * @author ICe
  */
 @Data
 public class IdsRequest<T> {

@@ -18,7 +18,7 @@ import java.security.Security;
 import java.security.cert.CertificateException;
 
 /**
- * @author daibin
+ * @author ICe
  */
 @Slf4j
 public class SSLHandlerProvider {

@@ -19,7 +19,7 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * 消息处理器
  *
- * @author daibin
+ * @author ICe
  */
 @Slf4j
 public class MessageProcessor {
@@ -84,6 +84,7 @@ public class MessageProcessor {
         Lock lock = new ReentrantLock();
         lock.lock();
         try {
+            log.debug("request:{}", req.toStringPlus());
             req.setMsgId(reqId);
             Condition condition = lock.newCondition();
             RpcMessageLock look = new RpcMessageLock(lock, condition);
@@ -106,6 +107,15 @@ public class MessageProcessor {
             LOCKS.remove(reqId);
         }
         return null;
+    }
+
+    public static void push(RpcMessage push) {
+        try {
+            log.debug("push:{}", push.toStringPlus());
+            push.getChannel().writeAndFlush(push);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
     }
 
 

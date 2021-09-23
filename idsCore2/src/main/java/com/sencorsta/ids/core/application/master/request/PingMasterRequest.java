@@ -1,13 +1,12 @@
-package com.sencorsta.ids.api.request;
+package com.sencorsta.ids.core.application.master.request;
 
 import io.netty.channel.Channel;
 import lombok.Data;
 
 /**
- * @author daibin
+ * @author ICe
  */
 @Data
 public class PingMasterRequest {
-    Channel channel;
     int freeMemory;
 }

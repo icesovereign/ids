@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 /**
  * 控制器
  *
- * @author daibin
+ * @author ICe
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)

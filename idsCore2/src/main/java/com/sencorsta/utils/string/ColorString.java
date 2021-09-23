@@ -7,7 +7,7 @@ import com.sencorsta.ids.core.application.Application;
 import java.net.URL;
 
 /**
- * @author daibin
+ * @author ICe
  */
 public class ColorString {
     static boolean isJar = true;

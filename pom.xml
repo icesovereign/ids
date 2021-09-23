@@ -14,6 +14,7 @@
 		<module>idsCore2</module>
 		<module>idsCommon</module>
 		<module>idsMaster</module>
+		<module>idsGateway</module>
 	</modules>
 
 	<properties>

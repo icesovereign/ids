@@ -4,7 +4,7 @@ import cn.hutool.core.util.RandomUtil;
 import com.sencorsta.ids.core.entity.annotation.Repository;
 
 /**
- * @author daibin
+ * @author ICe
  */
 @Repository
 public class MasterDao {

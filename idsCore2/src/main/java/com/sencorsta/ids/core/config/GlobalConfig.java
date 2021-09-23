@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * 全局配置
  *
- * @author daibin
+ * @author ICe
  */
 public class GlobalConfig extends Setting {
     private static Logger log = LoggerFactory.getLogger(GlobalConfig.class);

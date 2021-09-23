@@ -21,7 +21,7 @@ import java.util.List;
  * 协议选择器
  * 判断进来的协议是什么 使用不同的解码器处理
  *
- * @author daibin
+ * @author ICe
  */
 public class ProtocolChooseHandle extends ByteToMessageDecoder {
     /**

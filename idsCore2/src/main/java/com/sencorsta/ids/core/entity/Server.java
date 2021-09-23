@@ -1,5 +1,6 @@
 package com.sencorsta.ids.core.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sencorsta.ids.core.config.GlobalConfig;
 import com.sencorsta.ids.core.net.protocol.RpcMessage;
 import com.sencorsta.utils.string.StringUtil;
@@ -8,7 +9,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * @author daibin
+ * @author ICe
  */
 @Data
 @Slf4j
@@ -22,13 +23,14 @@ public class Server {
     String publicHost;
     int port;
 
-    int freeMemory;
-    int maxMemory;
+    long freeMemory;
+    long maxMemory;
 
     int load;
 
     boolean clearFlag;
 
+    @JsonIgnore
     private Channel channel;
 
     public Server() {

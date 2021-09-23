@@ -1,10 +1,14 @@
 package com.sencorsta.ids.core.net.protocol;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sencorsta.ids.core.config.GlobalConfig;
 import com.sencorsta.ids.core.constant.SerializeTypeConstant;
+import com.sencorsta.utils.object.Jsons;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
 
@@ -14,6 +18,7 @@ import java.util.Arrays;
  * @date 2019/6/12 17:19
  */
 @Data
+@Slf4j
 public class RpcMessage extends BaseMessage {
     /**
      * 序列化类型
@@ -44,6 +49,14 @@ public class RpcMessage extends BaseMessage {
         errCode = 0;
         token = "";
         method = "";
+    }
+
+    public void setJsonData(Object o) {
+        try {
+            data = Jsons.mapper.writeValueAsBytes(o);
+        } catch (JsonProcessingException e) {
+            log.error(e.getMessage(), e);
+        }
     }
 
     /**

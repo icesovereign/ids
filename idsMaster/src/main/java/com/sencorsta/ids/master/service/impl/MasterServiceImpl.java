@@ -1,12 +1,12 @@
 package com.sencorsta.ids.master.service.impl;
 
 
-import com.sencorsta.ids.api.request.GetTotalServerRequest;
-import com.sencorsta.ids.api.request.JoinMasterRequest;
-import com.sencorsta.ids.api.request.PingMasterRequest;
-import com.sencorsta.ids.api.response.GetTotalServerResponse;
-import com.sencorsta.ids.api.response.JoinMasterResponse;
-import com.sencorsta.ids.api.response.PingMasterResponse;
+import com.sencorsta.ids.core.application.master.request.GetTotalServerRequest;
+import com.sencorsta.ids.core.application.master.request.JoinMasterRequest;
+import com.sencorsta.ids.core.application.master.request.PingMasterRequest;
+import com.sencorsta.ids.core.application.master.response.GetTotalServerResponse;
+import com.sencorsta.ids.core.application.master.response.JoinMasterResponse;
+import com.sencorsta.ids.core.application.master.response.PingMasterResponse;
 import com.sencorsta.ids.core.config.GlobalConfig;
 import com.sencorsta.ids.core.constant.ErrorCodeConstant;
 import com.sencorsta.ids.core.entity.ErrorCode;
@@ -14,13 +14,15 @@ import com.sencorsta.ids.core.entity.IdsResponse;
 import com.sencorsta.ids.core.entity.Server;
 import com.sencorsta.ids.core.entity.annotation.Autowired;
 import com.sencorsta.ids.core.entity.annotation.Service;
+import com.sencorsta.ids.master.IdsMaster;
 import com.sencorsta.ids.master.dao.MasterDao;
 import com.sencorsta.ids.master.service.MasterService;
+import io.netty.channel.Channel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * @author daibin
+ * @author ICe
  */
 @Service
 @Slf4j
@@ -37,9 +39,9 @@ public class MasterServiceImpl implements MasterService {
     }
 
     @Override
-    public IdsResponse<PingMasterResponse> pingMaster(PingMasterRequest data) throws ErrorCode {
+    public IdsResponse<PingMasterResponse> pingMaster(PingMasterRequest data, Channel channel) throws ErrorCode {
         PingMasterResponse pingMasterResponse = new PingMasterResponse();
-        Server server = data.getChannel().attr(GlobalConfig.SERVER_KEY).get();
+        Server server = channel.attr(GlobalConfig.SERVER_KEY).get();
         if (server == null) {
             throw ErrorCodeConstant.NOT_FIND;
         }
@@ -50,33 +52,26 @@ public class MasterServiceImpl implements MasterService {
     }
 
     @Override
-    public IdsResponse<JoinMasterResponse> joinMaster(JoinMasterRequest data) {
+    public IdsResponse<JoinMasterResponse> joinMaster(JoinMasterRequest data, Channel channel) throws ErrorCode {
         Server server = data.getServer();
+        try {
+            server.setSid(IdsMaster.getSidByType(server));
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw ErrorCodeConstant.MASTER_SID_FULL;
+        }
+        server.bind(channel);
+        IdsMaster.addServer(server);
 
-//        try {
-//            String ip = channel.remoteAddress().toString();
-//            ip = ip.substring(1, ip.indexOf(":"));
-//
-//            if ((server.backHost == null) && (server.backPort > 0)) {
-//                server.backHost = ip;
-//            }
-//            server.sid = idsMaster.getSidByType(server);
-//        } catch (Exception e) {
-//            Out.error(e.getMessage());
-//            return error(ErrorCodeList.MASTER_SID_FULL);
-//        }
-//        server.bind(channel);
-//        idsMaster.addServer(server);
-//
-//        JSONObject res = new JSONObject();
-//        res.put("sid", server.sid);
-//        return response(res);
-
-        return null;
+        JoinMasterResponse joinMasterResponse = new JoinMasterResponse();
+        joinMasterResponse.setSid(server.getSid());
+        return new IdsResponse<>(joinMasterResponse);
     }
 
     @Override
     public IdsResponse<GetTotalServerResponse> getTotalServer(GetTotalServerRequest data) {
-        return null;
+        GetTotalServerResponse response = new GetTotalServerResponse();
+        response.setTotalServers(IdsMaster.totalServers);
+        return new IdsResponse<>(response);
     }
 }

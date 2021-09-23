@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 /**
  * 响应基础类
  *
- * @author daibin
+ * @author ICe
  */
 @Data
 @NoArgsConstructor

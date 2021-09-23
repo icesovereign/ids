@@ -12,7 +12,7 @@ import java.io.IOException;
 /**
  * 加载logback配置类
  *
- * @author daibin
+ * @author ICe
  */
 public class LogBackConfigLoader {
     public static void load(String externalConfigFileLocation) throws IOException, JoranException {

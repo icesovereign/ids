@@ -1,11 +1,11 @@
 package com.sencorsta.ids.master.controller;
 
-import com.sencorsta.ids.api.request.GetTotalServerRequest;
-import com.sencorsta.ids.api.request.JoinMasterRequest;
-import com.sencorsta.ids.api.request.PingMasterRequest;
-import com.sencorsta.ids.api.response.GetTotalServerResponse;
-import com.sencorsta.ids.api.response.JoinMasterResponse;
-import com.sencorsta.ids.api.response.PingMasterResponse;
+import com.sencorsta.ids.core.application.master.request.GetTotalServerRequest;
+import com.sencorsta.ids.core.application.master.request.JoinMasterRequest;
+import com.sencorsta.ids.core.application.master.request.PingMasterRequest;
+import com.sencorsta.ids.core.application.master.response.GetTotalServerResponse;
+import com.sencorsta.ids.core.application.master.response.JoinMasterResponse;
+import com.sencorsta.ids.core.application.master.response.PingMasterResponse;
 import com.sencorsta.ids.core.entity.ErrorCode;
 import com.sencorsta.ids.core.entity.IdsRequest;
 import com.sencorsta.ids.core.entity.IdsResponse;
@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * @author daibin
+ * @author ICe
  */
 @Controller
 @RequestMapping("/master")
@@ -44,13 +44,12 @@ public class MasterController {
 
     @RequestMapping("/pingMaster")
     public IdsResponse<PingMasterResponse> pingMaster(IdsRequest<PingMasterRequest> request) throws ErrorCode {
-        request.getData().setChannel(request.getChannel());
-        return masterService.pingMaster(request.getData());
+        return masterService.pingMaster(request.getData(),request.getChannel());
     }
 
     @RequestMapping("/joinMaster")
-    public IdsResponse<JoinMasterResponse> joinMaster(IdsRequest<JoinMasterRequest> request) {
-        return masterService.joinMaster(request.getData());
+    public IdsResponse<JoinMasterResponse> joinMaster(IdsRequest<JoinMasterRequest> request) throws ErrorCode {
+        return masterService.joinMaster(request.getData(),request.getChannel());
     }
 
     @RequestMapping("/getTotalServer")

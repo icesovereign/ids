@@ -1,7 +1,7 @@
 package com.sencorsta.ids.core.constant;
 
 /**
- * @author daibin
+ * @author ICe
  */
 public class ProtocolTypeConstant {
 	public static final short TYPE_RPC_REQ=1;

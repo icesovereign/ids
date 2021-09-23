@@ -1,7 +1,7 @@
 package com.sencorsta.ids.core.processor;
 
 /**
- * @author daibin
+ * @author ICe
  */
 public class GlobalContainer {
 

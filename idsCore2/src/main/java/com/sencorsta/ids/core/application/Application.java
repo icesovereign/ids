@@ -9,21 +9,21 @@ import cn.hutool.core.lang.Singleton;
 import cn.hutool.core.util.ClassUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.system.SystemUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.sencorsta.ids.core.application.master.MasterClient;
 import com.sencorsta.ids.core.config.ConfigGroup;
 import com.sencorsta.ids.core.config.GlobalConfig;
 import com.sencorsta.ids.core.entity.IdsRequest;
 import com.sencorsta.ids.core.entity.MethodProxy;
-import com.sencorsta.ids.core.entity.annotation.Component;
-import com.sencorsta.ids.core.entity.annotation.Controller;
-import com.sencorsta.ids.core.entity.annotation.RequestMapping;
-import com.sencorsta.ids.core.entity.annotation.Service;
+import com.sencorsta.ids.core.entity.annotation.*;
 import com.sencorsta.ids.core.net.innerServer.RpcServerBootstrap;
 import com.sencorsta.ids.core.processor.IdsThreadFactory;
 import com.sencorsta.ids.core.processor.MessageProcessor;
 import com.sencorsta.utils.file.FileUtil;
+import com.sencorsta.utils.object.Classes;
 import com.sencorsta.utils.string.ColorString;
 import com.sencorsta.utils.system.CpuUtil;
 import io.netty.channel.Channel;
@@ -42,11 +42,13 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * 启动器
  *
- * @author daibin
+ * @author ICe
  */
 @Slf4j
 public abstract class Application {
@@ -75,6 +77,7 @@ public abstract class Application {
      */
     public void start(String name) {
         try {
+            name = StrUtil.isNotBlank(name) ? name : "app";
             // 打印banner
             System.out.println(getBanner());
             // 打印进度条
@@ -91,7 +94,7 @@ public abstract class Application {
             addCloseProcess();
 
             // 启动Master客户端
-            //masterStart(name);
+            masterStart(name);
             // 如果不用nacos和master就自己和自己建立一个链接
             soloStart(name);
             // 启动完成后调用 继承用
@@ -133,13 +136,35 @@ public abstract class Application {
         }
     }
 
+    private void masterStart(String name) throws Exception {
+        if (GlobalConfig.instance().getBool("enable", ConfigGroup.master.getName(), true)) {
+            try {
+                MasterClient.getInstance().start();
+                return;
+            } catch (Exception e) {
+                throw new Exception("master启动失败,请检查master是否正常,配置是否填写正确");
+            }
+        } else {
+            log.trace("MasterClient服务未开启");
+        }
+    }
+
     private void scanPackage() {
         String packageName = ClassUtil.getPackage(this.getClass());
-        Set<Class<?>> classes = ClassScanner.scanPackage(packageName, c -> {
+        String packageCore = "com.sencorsta.ids.core";
+        Set<Class<?>> classes = new HashSet<>();
+        Set<Class<?>> temp1 = ClassScanner.scanPackage(packageName, c -> {
             Annotation[] annotations = c.getAnnotations();
             Annotation annotation = Arrays.stream(annotations).filter(o -> o.annotationType().isAnnotationPresent(Component.class)).findAny().orElse(null);
             return annotation != null;
         });
+        Set<Class<?>> temp2 = ClassScanner.scanPackage(packageCore, c -> {
+            Annotation[] annotations = c.getAnnotations();
+            Annotation annotation = Arrays.stream(annotations).filter(o -> o.annotationType().isAnnotationPresent(Component.class)).findAny().orElse(null);
+            return annotation != null;
+        });
+        classes.addAll(temp1);
+        classes.addAll(temp2);
         // 解析依赖关系，临时先component service，后controller
         Set<Class<?>> services = Sets.newHashSet();
         Set<Class<?>> controllers = Sets.newHashSet();
@@ -158,7 +183,7 @@ public abstract class Application {
             }
         });
 
-        components.forEach(it->{
+        components.forEach(it -> {
             try {
                 processComponent(it);
             } catch (Exception e) {
@@ -166,7 +191,7 @@ public abstract class Application {
             }
         });
 
-        services.forEach(it->{
+        services.forEach(it -> {
             try {
                 processService(it);
             } catch (Exception e) {
@@ -174,7 +199,7 @@ public abstract class Application {
             }
         });
 
-        controllers.forEach(it->{
+        controllers.forEach(it -> {
             try {
                 processController(it);
             } catch (Exception e) {
@@ -205,6 +230,8 @@ public abstract class Application {
         String url = annotation == null ? "" : annotation.value();
         log.debug("注册 Controller -> {}", c.getName());
         Class<Object> clazz = ClassUtil.loadClass(c.getName());
+        Object[] fields = Classes.getFields(clazz);
+        Object instance = Singleton.get(clazz, fields);
         Arrays.stream(c.getMethods()).forEach(m -> {
             RequestMapping fun = AnnotationUtil.getAnnotation(m, RequestMapping.class);
             if (ObjectUtil.isNotNull(fun)) {
@@ -219,25 +246,10 @@ public abstract class Application {
                 }
                 final Method method = ClassUtil.getDeclaredMethod(clazz, m.getName(), IdsRequest.class);
                 Class<Object> valueType = ClassUtil.loadClass(typeName);
-                Object[] objects = getFields(clazz);
-                Object obj = Singleton.get(clazz, objects);
-                MessageProcessor.addMethod(url + fun.value(), new MethodProxy(obj, method, valueType));
+                MessageProcessor.addMethod(url + fun.value(), new MethodProxy(instance, method, valueType));
                 log.trace("加载 RequestMapping -> {} type:{}", url + fun.value(), typeName);
             }
         });
-    }
-
-    private Object[] getFields(Class<Object> clazz) {
-        Field[] declaredFields = clazz.getDeclaredFields();
-        return Arrays.stream(declaredFields).map(e -> {
-            String s = MessageProcessor.getSERVICE_MAP().get(e.getType().getName());
-            if (ObjectUtil.isNotNull(s)) {
-                Class<Object> objectClass = ClassUtil.loadClass(s);
-                Object[] fields = getFields(objectClass);
-                return Singleton.get(objectClass, fields);
-            }
-            return null;
-        }).filter(Objects::nonNull).toArray();
     }
 
     AtomicInteger processCount = new AtomicInteger();
