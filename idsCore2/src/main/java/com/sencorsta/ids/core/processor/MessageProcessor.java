@@ -80,6 +80,9 @@ public class MessageProcessor {
     }
 
     public static RpcMessage request(RpcMessage req) {
+        if (req.getChannel() == null) {
+            return null;
+        }
         long reqId = UUID.incrementAndGet();
         Lock lock = new ReentrantLock();
         lock.lock();

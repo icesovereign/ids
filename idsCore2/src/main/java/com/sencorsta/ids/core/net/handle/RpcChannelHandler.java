@@ -1,5 +1,6 @@
 package com.sencorsta.ids.core.net.handle;
 
+import com.sencorsta.ids.core.application.Application;
 import com.sencorsta.ids.core.net.protocol.RpcMessage;
 import com.sencorsta.ids.core.processor.MessageProcessor;
 import io.netty.channel.Channel;
@@ -16,12 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @ChannelHandler.Sharable
 public final class RpcChannelHandler extends ChannelInboundHandlerAdapter {
-
-    //private RpcServerBootstrap server;
-
-//	public RpcChannelHandler(RpcServerBootstrap server) {
-//		this.server = server;
-//	}
 
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
@@ -41,7 +36,7 @@ public final class RpcChannelHandler extends ChannelInboundHandlerAdapter {
         //Out.info("handlerRemoved : ", channel);
         //GGame.getInstance().onServiceClose(channel);
         log.trace("RpcServer移除:" + ctx.channel());
-        //Application.getInstance().onServiceClose(channel);
+        Application.instance().onServiceClose(channel);
     }
 
     @Override

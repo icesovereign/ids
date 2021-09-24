@@ -18,6 +18,7 @@ import com.sencorsta.ids.core.config.ConfigGroup;
 import com.sencorsta.ids.core.config.GlobalConfig;
 import com.sencorsta.ids.core.entity.IdsRequest;
 import com.sencorsta.ids.core.entity.MethodProxy;
+import com.sencorsta.ids.core.entity.Server;
 import com.sencorsta.ids.core.entity.annotation.*;
 import com.sencorsta.ids.core.net.innerServer.RpcServerBootstrap;
 import com.sencorsta.ids.core.processor.IdsThreadFactory;
@@ -27,6 +28,7 @@ import com.sencorsta.utils.object.Classes;
 import com.sencorsta.utils.string.ColorString;
 import com.sencorsta.utils.system.CpuUtil;
 import io.netty.channel.Channel;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -38,6 +40,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -57,6 +60,12 @@ public abstract class Application {
      * 维护线程
      */
     public final ScheduledExecutorService MAINTAIN = new ScheduledThreadPoolExecutor(1, new IdsThreadFactory("IDS-MAINTAIN"));
+
+    /**
+     * 服务器列表
+     */
+    @Getter
+    public final Map<String, Map<String,Server>> totalServers = new ConcurrentHashMap<>();
 
     /**
      * 应用类型
@@ -102,13 +111,13 @@ public abstract class Application {
 
             log.info("操作系统环境" + " -> " + SystemUtil.getOsInfo().getName());
             log.info("CPU" + " -> " + CpuUtil.getCpu() + " " + Runtime.getRuntime().availableProcessors() + "Cores");
-            log.info("内存大小" + " -> " + DataSizeUtil.format(SystemUtil.getFreeMemory()) + "(可用)/" + DataSizeUtil.format(SystemUtil.getMaxMemory()) + "(已申请)/" + DataSizeUtil.format(SystemUtil.getRuntimeInfo().getUsableMemory()) + "(剩余)");
+            log.info("内存大小" + " -> " + DataSizeUtil.format(SystemUtil.getFreeMemory()) + "(可用)/" + DataSizeUtil.format(SystemUtil.getTotalMemory()) + "(已申请)/" + DataSizeUtil.format(SystemUtil.getRuntimeInfo().getUsableMemory()) + "(剩余)");
             log.info("磁盘剩余空间" + " -> " + DataSizeUtil.format(new File(System.getProperty("user.dir")).getFreeSpace()));
             log.info("Java Version" + " -> " + SystemUtil.getJavaInfo().getVersion());
             String logLevel = GlobalConfig.instance().getStr("log.level", ConfigGroup.core.getName(), "info");
             log.info("Log Level" + " -> " + logLevel);
             String logHome = GlobalConfig.instance().getStr("log.home", ConfigGroup.core.getName(), "./log");
-            log.info("Log Home" + " -> " + logHome);
+            log.info("Log Home" + " -> " + new File(logHome).getAbsolutePath());
             log.info("Log Size" + " -> " + DataSizeUtil.format(FileUtil.countFiles(logHome)));
             log.info("服务已成功启动运行喽，{}{}{}{}!", ColorString.getColor256Str("😺", "173"), ColorString.getColor256Str("😸", "246"), ColorString.getColor256Str("😹", "61"), ColorString.getColor256Str("😻", "15"));
 

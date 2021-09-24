@@ -1,6 +1,5 @@
 package com.sencorsta.ids.core.application.master.request;
 
-import io.netty.channel.Channel;
 import lombok.Data;
 
 /**
@@ -8,5 +7,5 @@ import lombok.Data;
  */
 @Data
 public class PingMasterRequest {
-    int freeMemory;
+    long freeMemory;
 }

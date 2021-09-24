@@ -1,5 +1,6 @@
 package com.sencorsta.ids.core.entity;
 
+import cn.hutool.core.io.unit.DataSizeUtil;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sencorsta.ids.core.config.GlobalConfig;
 import com.sencorsta.ids.core.net.protocol.RpcMessage;
@@ -48,7 +49,7 @@ public class Server {
     }
 
     public void push(RpcMessage message) {
-        log.trace("开始推送:{}[{}:{}]", type, host, port);
+        log.trace("开始推送:{}[{}:{}]", sid, host, port);
         this.channel.writeAndFlush(message);
     }
 
@@ -65,11 +66,11 @@ public class Server {
         }
 
         buff.append(" 地址:" + host + "(" + publicHost + ")" + ":" + port);
-        buff.append(" 内存占用:" + (maxMemory - freeMemory) + "MB" + "/" + maxMemory + "MB");
+        buff.append(" 内存占用:" + DataSizeUtil.format(maxMemory - freeMemory) + "/" + DataSizeUtil.format(maxMemory));
         return buff.toString();
     }
 
     public String getInfo() {
-        return sid + " ping : " + host + ":" + port + " 内存占用:" + (maxMemory - freeMemory) + "/" + maxMemory;
+        return sid + " ping : " + host + ":" + port + " 内存占用:" + DataSizeUtil.format(maxMemory - freeMemory) + "/" + DataSizeUtil.format(maxMemory);
     }
 }

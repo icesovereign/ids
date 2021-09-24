@@ -43,9 +43,9 @@ public class MasterServiceImpl implements MasterService {
         PingMasterResponse pingMasterResponse = new PingMasterResponse();
         Server server = channel.attr(GlobalConfig.SERVER_KEY).get();
         if (server == null) {
-            throw ErrorCodeConstant.NOT_FIND;
+            throw ErrorCodeConstant.MASTER_CAN_NOT_FIND_SERVER;
         }
-        int freeMemory = data.getFreeMemory();
+        long freeMemory = data.getFreeMemory();
         server.setFreeMemory(freeMemory);
         log.trace(server.getInfo());
         return new IdsResponse<>(pingMasterResponse);
@@ -71,7 +71,7 @@ public class MasterServiceImpl implements MasterService {
     @Override
     public IdsResponse<GetTotalServerResponse> getTotalServer(GetTotalServerRequest data) {
         GetTotalServerResponse response = new GetTotalServerResponse();
-        response.setTotalServers(IdsMaster.totalServers);
+        response.setTotalServers(IdsMaster.instance().totalServers);
         return new IdsResponse<>(response);
     }
 }

@@ -5,13 +5,15 @@ import cn.hutool.system.SystemUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.sencorsta.ids.core.application.master.request.GetTotalServerRequest;
 import com.sencorsta.ids.core.application.master.request.JoinMasterRequest;
+import com.sencorsta.ids.core.application.master.request.PingMasterRequest;
 import com.sencorsta.ids.core.application.master.response.GetTotalServerResponse;
 import com.sencorsta.ids.core.application.master.response.JoinMasterResponse;
+import com.sencorsta.ids.core.application.master.response.PingMasterResponse;
+import com.sencorsta.ids.core.application.proxy.ProxyClient;
 import com.sencorsta.ids.core.config.ConfigGroup;
 import com.sencorsta.ids.core.config.GlobalConfig;
 import com.sencorsta.ids.core.constant.ProtocolTypeConstant;
 import com.sencorsta.ids.core.constant.SerializeTypeConstant;
-import com.sencorsta.ids.core.entity.IdsRequest;
 import com.sencorsta.ids.core.entity.IdsResponse;
 import com.sencorsta.ids.core.entity.Server;
 import com.sencorsta.ids.core.entity.annotation.Autowired;
@@ -75,7 +77,7 @@ public class MasterClientServiceImpl implements MasterClientService {
             localServer.setPublicHost(config.getStr("host.public", ConfigGroup.server.getName(), null));
             localServer.setPort(config.getInt("port", ConfigGroup.server.getName(), null));
             localServer.setFreeMemory(SystemUtil.getFreeMemory());
-            localServer.setMaxMemory(SystemUtil.getMaxMemory());
+            localServer.setMaxMemory(SystemUtil.getTotalMemory());
         }
         joinMasterRequest.setServer(localServer);
         message.setJsonData(joinMasterRequest);
@@ -95,13 +97,29 @@ public class MasterClientServiceImpl implements MasterClientService {
     }
 
     @Override
-    public IdsResponse<Object> pingMaster(IdsRequest<Object> request) {
-        return null;
+    public boolean pingMaster(Channel channel) {
+        PingMasterRequest pingMasterRequest = new PingMasterRequest();
+        pingMasterRequest.setFreeMemory(SystemUtil.getFreeMemory());
+        RpcMessage message = new RpcMessage(ProtocolTypeConstant.TYPE_RPC_REQ);
+        message.setMethod("/master/pingMaster");
+        message.setSerializeType(SerializeTypeConstant.TYPE_JSON);
+        message.setJsonData(pingMasterRequest);
+        message.setChannel(channel);
+
+        RpcMessage responseMsg = MessageProcessor.request(message);
+        if (ObjectUtil.isNotNull(responseMsg)) {
+            IdsResponse<PingMasterResponse> getTotalServerResponse = Jsons.toBean(responseMsg.getData(), new TypeReference<IdsResponse<PingMasterResponse>>() {
+            });
+            if (ObjectUtil.isNotNull(getTotalServerResponse) && getTotalServerResponse.getCode() == 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
-    public void onTotalServer(Map<String, List<Server>> data, Channel channel) {
+    public void onTotalServer(Map<String, Map<String,Server>> data, Channel channel) {
         log.debug("收到master服务器");
-//        ProxyClient.maintenanceList(json.getJSONObject("data").getJSONObject("totalServers"));
+        ProxyClient.maintenanceList(data);
     }
 }

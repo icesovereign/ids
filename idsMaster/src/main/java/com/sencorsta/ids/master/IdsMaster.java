@@ -27,18 +27,14 @@ public class IdsMaster extends Application {
         return (IdsMaster) instance;
     }
 
-    // 服务器列表
-    public static final Map<String, List<Server>> totalServers = new ConcurrentHashMap<>();
-
-
     public static void addServer(Server server) {
         String serverType = server.getType();
-        List<Server> servers = totalServers.get(serverType);
+        Map<String, Server> servers = instance().totalServers.get(serverType);
         if (servers == null) {
-            servers = new CopyOnWriteArrayList<>();
-            totalServers.put(serverType, servers);
+            servers = new ConcurrentHashMap<>();
+            instance().totalServers.put(serverType, servers);
         }
-        servers.add(server);
+        servers.put(server.getSid(), server);
 
         log.debug("master添加服务器成功!{}", server);
         showTotalServers();
@@ -48,15 +44,15 @@ public class IdsMaster extends Application {
     public static synchronized String getSidByType(Server server) throws Exception {
 
         String serverType = server.getType();
-        List<Server> servers = totalServers.get(serverType);
+        Map<String, Server> servers = instance().totalServers.get(serverType);
         if (servers == null) {
-            servers = new CopyOnWriteArrayList<>();
+            servers = new ConcurrentHashMap<>();
         }
 
         if (!StringUtil.isEmpty(server.getSid())) {
             //先判断之前的id是否可以继续用
             boolean isUseBefore = false;
-            for (Server serverTemp : servers) {
+            for (Server serverTemp : servers.values()) {
                 if (serverTemp.getSid().equals(server.getSid())) {
                     isUseBefore = true;
                     break;
@@ -70,7 +66,7 @@ public class IdsMaster extends Application {
         int index = 0;
         for (int i = 1; i < Integer.MAX_VALUE; i++) {
             boolean isUse = false;
-            for (Server serverTemp : servers) {
+            for (Server serverTemp : servers.values()) {
                 String num = String.format("%03d", i);
                 String sidTemp = serverType + "-" + num;
                 if (serverTemp.getSid().equals(sidTemp)) {
@@ -96,7 +92,7 @@ public class IdsMaster extends Application {
         if (channel.attr(GlobalConfig.SERVER_KEY) != null) {
             final Server server = channel.attr(GlobalConfig.SERVER_KEY).get();
             if (server != null) {
-                List<Server> servers = totalServers.get(server.getSid());
+                Map<String, Server> servers = instance().totalServers.get(server.getType());
                 if (servers != null) {
                     log.info("{} 退出 master!!!", server);
                     servers.remove(server);
@@ -108,30 +104,31 @@ public class IdsMaster extends Application {
     }
 
     public static void showTotalServers() {
-        log.trace("***************************当前已经连接的服务器***************************");
-        for (String keys : totalServers.keySet()) {
-            log.trace("-------------------------------------------------------------");
-            log.trace(keys + ":");
-            List<Server> serversTemp = totalServers.get(keys);
-            for (Server serverTemp : serversTemp) {
-                log.trace(serverTemp.toString());
+        StringBuffer status = new StringBuffer();
+        status.append("\n");
+        status.append("***************************当前已经连接的服务器***************************").append("\n");
+        for (String keys : instance().totalServers.keySet()) {
+            status.append("-------------------------------------------------------------").append("\n");
+            status.append(keys + ":").append("\n");
+            Map<String, Server> serversTemp = instance().totalServers.get(keys);
+            for (Server serverTemp : serversTemp.values()) {
+                status.append(serverTemp.toString()).append("\n");
             }
-            log.trace("-------------------------------------------------------------");
+            status.append("-------------------------------------------------------------").append("\n");
         }
-        log.trace("**************************************************************************");
-
+        status.append("**************************************************************************").append("\n");
+        log.trace(status.toString());
         //打印当前所有激活服务器
         StringBuffer sb = new StringBuffer();
-        sb.append("打印当前所有激活服务器:");
         sb.append("\n");
-        for (String keys : totalServers.keySet()) {
-            List<Server> serversTemp = totalServers.get(keys);
-            for (Server server : serversTemp) {
+        sb.append("打印当前所有激活服务器:").append("\n");
+        for (String keys : instance().totalServers.keySet()) {
+            Map<String, Server> serversTemp = instance().totalServers.get(keys);
+            for (Server server : serversTemp.values()) {
                 if (server != null) {
                     Channel channelTemp = server.channel();
                     if (channelTemp != null && channelTemp.isActive()) {
-                        sb.append(server.getSid());
-                        sb.append("\n");
+                        sb.append(server.getSid()).append("\n");
                     }
                 }
             }
@@ -140,11 +137,11 @@ public class IdsMaster extends Application {
     }
 
     public static void pushTotalServers() {
-        for (String keys : totalServers.keySet()) {
-            List<Server> serversTemp = IdsMaster.totalServers.get(keys);
-            for (Server serverTemp : serversTemp) {
+        for (String keys : instance().totalServers.keySet()) {
+            Map<String, Server> serversTemp = IdsMaster.instance().totalServers.get(keys);
+            for (Server serverTemp : serversTemp.values()) {
                 TotalServerPush totalServerPush = new TotalServerPush();
-                totalServerPush.setTotalServers(totalServers);
+                totalServerPush.setTotalServers(instance().totalServers);
                 RpcMessage message = new RpcMessage(ProtocolTypeConstant.TYPE_RPC_PUSH);
                 message.setMethod("/masterClient/totalServers");
                 message.setSerializeType(SerializeTypeConstant.TYPE_JSON);

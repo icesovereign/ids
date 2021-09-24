@@ -1,6 +1,5 @@
 package com.sencorsta.ids.core.service;
 
-import com.sencorsta.ids.core.entity.IdsRequest;
 import com.sencorsta.ids.core.entity.IdsResponse;
 import com.sencorsta.ids.core.entity.Server;
 import com.sencorsta.ids.core.entity.annotation.Service;
@@ -36,12 +35,12 @@ public interface MasterClientService {
      * @param request 请求体
      * @return 响应结果
      */
-    IdsResponse<Object> pingMaster(IdsRequest<Object> request);
+    boolean pingMaster(Channel request);
 
     /**
      * 收到所有服务器数据包
      *  @param data
      * @param channel
      */
-    void onTotalServer(Map<String, List<Server>> data, Channel channel);
+    void onTotalServer(Map<String, Map<String,Server>> data, Channel channel);
 }
