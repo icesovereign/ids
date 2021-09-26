@@ -9,7 +9,7 @@
         <version>2.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>ids-core</artifactId>
+    <artifactId>idsCore</artifactId>
 
     <packaging>jar</packaging>
     <name>idsCore</name>

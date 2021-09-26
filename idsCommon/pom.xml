@@ -21,7 +21,7 @@
     <dependencies>
         <dependency>
             <groupId>com.sencorsta</groupId>
-            <artifactId>ids-core</artifactId>
+            <artifactId>idsCore</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
