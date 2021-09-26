@@ -28,3 +28,13 @@ ids1.0系列最高版本号v1.6.21 目前已经停止维护
 ids2.0系列是船新重构版本 目前处于开发阶段....
   
 ![image](https://github.com/icesovereign/ids/blob/main/mind.png)
+
+# 新项目生成方法
+1,本地更新并安装idsArchetypes
+```shell
+mvn clean install -f idsArchetypes/pom.xml
+```
+2,执行下面脚本 (执行前先修改对应的变量)
+```shell
+mvn archetype:generate -DarchetypeGroupId=com.sencorsta -DarchetypeArtifactId=idsArchetypes -DinteractiveMode=false -Dversion=2.0-SNAPSHOT -Dpackage=com.sencorsta.ids -DgroupId=com.sencorsta -DartifactId=SuperMarioGame
+```

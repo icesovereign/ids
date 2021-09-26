@@ -1,7 +1,6 @@
 package com.sencorsta.ids.core.processor;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sencorsta.ids.core.config.GlobalConfig;
 import com.sencorsta.ids.core.constant.ErrorCodeConstant;
 import com.sencorsta.ids.core.constant.ProtocolTypeConstant;
@@ -62,6 +61,18 @@ public class MessageDispatcher implements Runnable {
                 break;
             // 推送一般直接触发对应的逻辑就行了
             case ProtocolTypeConstant.TYPE_RPC_PUSH:
+                handlePush(message);
+                break;
+            // 客户端来的请求
+            case ProtocolTypeConstant.TYPE_REQ:
+                handlePush(message);
+                break;
+            // 返回给客户端的响应
+            case ProtocolTypeConstant.TYPE_RES:
+                handlePush(message);
+                break;
+            // 直接推送给客户端
+            case ProtocolTypeConstant.TYPE_PUSH:
                 handlePush(message);
                 break;
             default:

@@ -4,8 +4,14 @@
         xsi:schemaLocation="http://maven.apache.org/plugins/maven-archetype-plugin/archetype-descriptor/1.1.0 https://maven.apache.org/xsd/archetype-descriptor-1.1.0.xsd"
         name="idsArchetypes">
     <requiredProperties>
-        <requiredProperty key="mainClassName">
-            <defaultValue>IdsProxy</defaultValue>
+        <requiredProperty key="typeFirstLow">
+            <defaultValue>${artifactId.substring(0,1).toLowerCase()}${artifactId.substring(1)}</defaultValue>
+        </requiredProperty>
+        <requiredProperty key="typeLow">
+            <defaultValue>${artifactId.toLowerCase()}</defaultValue>
+        </requiredProperty>
+        <requiredProperty key="typeFirstUp">
+            <defaultValue>${package.getClass().forName("org.apache.velocity.util.StringUtils").capitalizeFirstLetter("$artifactId")}</defaultValue>
         </requiredProperty>
     </requiredProperties>
 

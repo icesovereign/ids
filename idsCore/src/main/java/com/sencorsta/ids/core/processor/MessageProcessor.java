@@ -5,7 +5,6 @@ import com.sencorsta.ids.core.config.GlobalConfig;
 import com.sencorsta.ids.core.entity.MethodProxy;
 import com.sencorsta.ids.core.net.protocol.RpcMessage;
 import com.sencorsta.ids.core.net.protocol.RpcMessageLock;
-import com.sencorsta.utils.string.StringUtil;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
