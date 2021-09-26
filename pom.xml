@@ -11,7 +11,7 @@
 	<url>http://www.sencorsta.com</url>
 
 	<modules>
-		<module>idsCore2</module>
+		<module>idsCore</module>
 		<module>idsCommon</module>
 		<module>idsMaster</module>
 		<module>idsGateway</module>
