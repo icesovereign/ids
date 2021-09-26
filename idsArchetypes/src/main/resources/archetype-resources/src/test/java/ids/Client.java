@@ -1,4 +1,4 @@
-package com.sencorsta.ids;
+package ids;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
