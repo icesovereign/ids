@@ -1,4 +1,4 @@
-package ${groupId}.ids.master;
+package ${package};
 
 import com.sencorsta.ids.core.application.Application;
 
