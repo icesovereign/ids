@@ -1,6 +1,7 @@
 package com.sencorsta.ids.core.net.protocol;
 
 import com.sencorsta.ids.core.config.GlobalConfig;
+import com.sencorsta.ids.core.constant.ProtocolTypeConstant;
 import lombok.Data;
 
 /**
@@ -40,4 +41,7 @@ public class Header {
         return "type:" + type + " length:" + length;
     }
 
+    public String toStringPlus() {
+        return ProtocolTypeConstant.getProtocolStrByType(type);
+    }
 }

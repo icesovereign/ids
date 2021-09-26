@@ -4,6 +4,7 @@ import cn.hutool.core.io.unit.DataSizeUtil;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sencorsta.ids.core.config.GlobalConfig;
 import com.sencorsta.ids.core.net.protocol.RpcMessage;
+import com.sencorsta.ids.core.processor.MessageProcessor;
 import com.sencorsta.utils.string.StringUtil;
 import io.netty.channel.Channel;
 import lombok.Data;
@@ -21,23 +22,20 @@ public class Server {
     String sid;
 
     String host;
+
     String publicHost;
+
     int port;
 
     long freeMemory;
+
     long maxMemory;
 
-    int load;
-
+    @JsonIgnore
     boolean clearFlag;
 
     @JsonIgnore
     private Channel channel;
-
-    public Server() {
-
-    }
-
 
     public void bind(Channel channel) {
         this.channel = channel;
@@ -50,26 +48,25 @@ public class Server {
 
     public void push(RpcMessage message) {
         log.trace("开始推送:{}[{}:{}]", sid, host, port);
-        this.channel.writeAndFlush(message);
+        MessageProcessor.push(message);
     }
-
 
     @Override
     public String toString() {
-        StringBuffer buff = new StringBuffer();
-        buff.append(sid + " --> ");
+        StringBuilder buff = new StringBuilder();
+        buff.append(sid).append(" --> ");
 
         if (channel == null) {
             buff.append(" #未连接#");
         } else {
             buff.append(" *已连接*");
         }
-
-        buff.append(" 地址:" + host + "(" + publicHost + ")" + ":" + port);
-        buff.append(" 内存占用:" + DataSizeUtil.format(maxMemory - freeMemory) + "/" + DataSizeUtil.format(maxMemory));
+        buff.append(" 地址:").append(host).append("(").append(publicHost).append(")").append(":").append(port);
+        buff.append(" 内存占用:").append(DataSizeUtil.format(maxMemory - freeMemory)).append("/").append(DataSizeUtil.format(maxMemory));
         return buff.toString();
     }
 
+    @JsonIgnore
     public String getInfo() {
         return sid + " ping : " + host + ":" + port + " 内存占用:" + DataSizeUtil.format(maxMemory - freeMemory) + "/" + DataSizeUtil.format(maxMemory);
     }

@@ -42,7 +42,7 @@ public final class RpcChannelHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object packet) throws Exception {
         RpcMessage msg = (RpcMessage) packet;
-        log.trace("RpcServer新消息:" + ctx.channel() + " " + msg);
+        //log.trace("RpcServer新消息: " + msg);
         msg.setChannel(ctx.channel());
         MessageProcessor.incomeMessage(msg);
     }

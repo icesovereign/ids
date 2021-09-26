@@ -1,11 +1,9 @@
 package com.sencorsta.ids.core.service;
 
-import com.sencorsta.ids.core.entity.IdsResponse;
 import com.sencorsta.ids.core.entity.Server;
 import com.sencorsta.ids.core.entity.annotation.Service;
 import io.netty.channel.Channel;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -16,8 +14,7 @@ public interface MasterClientService {
     /**
      * 获取所有的服务器
      *
-     * @param request 请求体
-     * @return 服务器列表
+     * @param channel 请求体
      */
     void getTotalServer(Channel channel);
 
@@ -25,7 +22,6 @@ public interface MasterClientService {
      * 加入master
      *
      * @param channel master的channel
-     * @return 响应结果
      */
     void joinMaster(Channel channel);
 
@@ -39,8 +35,9 @@ public interface MasterClientService {
 
     /**
      * 收到所有服务器数据包
-     *  @param data
-     * @param channel
+     *
+     * @param data    服务器列表
+     * @param channel channel
      */
-    void onTotalServer(Map<String, Map<String,Server>> data, Channel channel);
+    void onTotalServer(Map<String, Map<String, Server>> data, Channel channel);
 }

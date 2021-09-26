@@ -93,12 +93,12 @@ public class RpcMessage extends BaseMessage {
         switch (serializeType) {
             case SerializeTypeConstant.TYPE_JSON:
             case SerializeTypeConstant.TYPE_STRING:
-                return "header:[" + header + "]" + "  body:[" + "errCode:" + errCode + " serializeType:" + serializeType + " method:" + method + " data:" + new String(data, GlobalConfig.UTF_8) + "]";
+                return "[" + header.toStringPlus() + "] " + method + "  " + "errCode:" + errCode + " " + SerializeTypeConstant.getSerializeStrByType(serializeType) + ":" + new String(data, GlobalConfig.UTF_8);
             case SerializeTypeConstant.TYPE_BYTEARR:
             case SerializeTypeConstant.TYPE_PROTOBUF:
-                return "header:[" + header + "]" + "  body:[" + "errCode:" + errCode + " serializeType:" + serializeType + " method:" + method + " data:" + Arrays.toString(data) + "]";
+                return "[" + header.toStringPlus() + "] " + method + "  " + "errCode:" + errCode + " " + SerializeTypeConstant.getSerializeStrByType(serializeType) + ":" + Arrays.toString(data);
             default:
-                return "header:[" + header + "]" + "  body:[" + "errCode:" + errCode + " serializeType:" + serializeType + " method:" + method + " data:" + "🐷未知协议🐷" + "]";
+                return "[" + header.toStringPlus() + "] " + method + "  " + "errCode:" + errCode + " " + SerializeTypeConstant.getSerializeStrByType(serializeType) + ":" + "🐷未知协议🐷";
         }
     }
 

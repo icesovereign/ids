@@ -11,10 +11,8 @@ import com.sencorsta.utils.string.StringUtil;
 import io.netty.channel.Channel;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 
 /**
@@ -95,7 +93,7 @@ public class IdsMaster extends Application {
                 Map<String, Server> servers = instance().totalServers.get(server.getType());
                 if (servers != null) {
                     log.info("{} 退出 master!!!", server);
-                    servers.remove(server);
+                    servers.remove(server.getSid());
                     showTotalServers();
                     pushTotalServers();
                 }
@@ -137,15 +135,16 @@ public class IdsMaster extends Application {
     }
 
     public static void pushTotalServers() {
+        final TotalServerPush totalServerPush = new TotalServerPush();
+        totalServerPush.setTotalServers(instance().totalServers);
         for (String keys : instance().totalServers.keySet()) {
             Map<String, Server> serversTemp = IdsMaster.instance().totalServers.get(keys);
             for (Server serverTemp : serversTemp.values()) {
-                TotalServerPush totalServerPush = new TotalServerPush();
-                totalServerPush.setTotalServers(instance().totalServers);
                 RpcMessage message = new RpcMessage(ProtocolTypeConstant.TYPE_RPC_PUSH);
                 message.setMethod("/masterClient/totalServers");
                 message.setSerializeType(SerializeTypeConstant.TYPE_JSON);
                 message.setJsonData(totalServerPush);
+                message.setChannel(serverTemp.getChannel());
                 serverTemp.push(message);
             }
         }

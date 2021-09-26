@@ -33,7 +33,7 @@ public class MessageDispatcher implements Runnable {
 
     @Override
     public void run() {
-        log.info("MessageDispatcher 开始处理消息{}", message.toStringPlus());
+        log.info("开始处理消息: {}", message.toStringPlus());
         if (GlobalConfig.IS_DEBUG) {
             long sTime = System.currentTimeMillis();
             String method = message.getMethod();
@@ -108,7 +108,7 @@ public class MessageDispatcher implements Runnable {
             log.debug("没有找到对应的处理方法:{}", message.getMethod());
             res.setErrCode(ErrorCodeConstant.NOT_FIND.getCode());
         }
-        log.info(res.toStringPlus());
+        log.info("返回消息回调: " + res.toStringPlus());
         message.getChannel().writeAndFlush(res);
     }
 

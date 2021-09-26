@@ -119,7 +119,6 @@ public class MasterClientServiceImpl implements MasterClientService {
 
     @Override
     public void onTotalServer(Map<String, Map<String,Server>> data, Channel channel) {
-        log.debug("收到master服务器");
         ProxyClient.maintenanceList(data);
     }
 }

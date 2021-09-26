@@ -62,14 +62,14 @@ public class MasterClient {
         MAINTAIN.scheduleWithFixedDelay(() -> {
             try {
                 if (disconnect) {
-                    log.info("开始连接 master ....");
+                    log.debug("开始连接 master ....");
                     masterChannel = bootstrap.connect(GlobalConfig.instance().getStr("host", ConfigGroup.master.getName(), "0.0.0.0"), GlobalConfig.instance().getInt("port", ConfigGroup.master.getName()));
                     if (masterChannel != null && masterChannel.isActive()) {
-                        log.info("连接成功 master !");
+                        log.debug("连接成功 master !");
                         masterClientService.joinMaster(masterChannel);
                         disconnect = false;
                     } else {
-                        log.info("连接失败 master {}秒后重试...", interval);
+                        log.warn("连接失败 master {}秒后重试...", interval);
                     }
                 }
                 if (!masterClientService.pingMaster(masterChannel)) {

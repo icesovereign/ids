@@ -87,7 +87,7 @@ public class MessageProcessor {
         Lock lock = new ReentrantLock();
         lock.lock();
         try {
-            log.debug("request:{}", req.toStringPlus());
+            log.info("执行同步请求:{}", req.toStringPlus());
             req.setMsgId(reqId);
             Condition condition = lock.newCondition();
             RpcMessageLock look = new RpcMessageLock(lock, condition);
@@ -114,7 +114,7 @@ public class MessageProcessor {
 
     public static void push(RpcMessage push) {
         try {
-            log.debug("push:{}", push.toStringPlus());
+            log.info("执行异步推送:{}", push.toStringPlus());
             push.getChannel().writeAndFlush(push);
         } catch (Exception e) {
             log.error(e.getMessage(), e);

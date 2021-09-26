@@ -1,0 +1,63 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.sencorsta</groupId>
+        <artifactId>ids</artifactId>
+        <version>2.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>${artifactId}</artifactId>
+
+    <packaging>jar</packaging>
+    <name>${artifactId}</name>
+    <description>ICe Distribution Service ${artifactId}</description>
+    <url>http://www.sencorsta.com</url>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.sencorsta</groupId>
+            <artifactId>ids-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>ids-proxy</finalName>
+        <plugins>
+            <!-- Jib -->
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <configuration>
+                    <to>
+                        <image>sencorsta.com/ids-proxy</image>
+                    </to>
+<!--
+                    <containerizingMode>packaged</containerizingMode>
+-->
+                    <container>
+                        <workingDirectory>/app</workingDirectory>
+                        <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
+                        <environment>
+                            <TZ>Asia/Shanghai</TZ>
+                        </environment>
+                        <jvmFlags>
+                            <jvmFlag>-Dserver.type=master</jvmFlag>
+                            <jvmFlag>-Dlog.home=/app/log/</jvmFlag>
+                        </jvmFlags>
+                        <ports>
+                            <port>11001</port>
+                        </ports>
+                        <format>OCI</format>
+                    </container>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
