@@ -15,6 +15,10 @@ public class ProtocolTypeConstant {
     public static final short TYPE_PUSH = 6;
     public static final short TYPE_RPC_PUSH = 7;
 
+    public static final short TYPE_PROXY_REQ = 9;
+    public static final short TYPE_PROXY_RES = 10;
+    public static final short TYPE_PROXY_PUSH = 11;
+
 
     public static String getProtocolStrByType(int type) {
         switch (type) {
@@ -32,6 +36,12 @@ public class ProtocolTypeConstant {
                 return "PUSH";
             case TYPE_RPC_PUSH:
                 return "RPC_PUSH";
+            case TYPE_PROXY_REQ:
+                return "PROXY_REQ";
+            case TYPE_PROXY_RES:
+                return "PROXY_RES";
+            case TYPE_PROXY_PUSH:
+                return "PROXY_PUSH";
             default:
                 return "UNKNOWN";
         }

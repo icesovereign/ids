@@ -21,6 +21,11 @@ public class IdsRequest<T> {
      */
     Channel channel;
 
+    /**
+     * 用户id
+     */
+    String userId;
+
     public IdsRequest(T data) {
         this.data = data;
     }

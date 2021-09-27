@@ -1,10 +1,11 @@
-package ${package}.${typeLow}.service.impl;
+package com.sencorsta.ids.appdemo.service.impl;
 
 
 import com.sencorsta.ids.core.entity.annotation.Autowired;
 import com.sencorsta.ids.core.entity.annotation.Service;
-import ${package}.${typeLow}.dao.${typeFirstUp}Dao;
-import ${package}.${typeLow}.service.${typeFirstUp}Service;
+import com.sencorsta.ids.appdemo.dao.AppDemoDao;
+import com.sencorsta.ids.appdemo.service.AppDemoService;
+import com.sun.javafx.binding.StringFormatter;
 import io.netty.channel.Channel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,13 +16,13 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class ${typeFirstUp}ServiceImpl implements ${typeFirstUp}Service {
+public class AppDemoServiceImpl implements AppDemoService {
 
-    private final ${typeFirstUp}Dao ${typeFirstLow}Dao;
+    private final AppDemoDao appDemoDao;
 
     @Override
     public String helloWorld(String s,Channel channel) {
-        String res = StringFormatter.format("你好啊{}!!!我是{}", ${typeFirstLow}Dao.getName(s), "${typeFirstLow}").toString();
+        String res = StringFormatter.format("你好啊{}!!!我是{}", appDemoDao.getName(s), "appDemo").toString();
         log.info(res);
         return res;
     }

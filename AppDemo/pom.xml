@@ -8,11 +8,11 @@
         <version>2.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>idsGateway</artifactId>
+    <artifactId>AppDemo</artifactId>
 
     <packaging>jar</packaging>
-    <name>idsGateway</name>
-    <description>ICe Distribution Service idsGateway</description>
+    <name>AppDemo</name>
+    <description>ICe Distribution Service AppDemo</description>
     <url>http://www.sencorsta.com</url>
 
     <properties>

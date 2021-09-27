@@ -6,6 +6,8 @@ import com.sencorsta.ids.core.entity.Server;
 import com.sencorsta.ids.core.net.handle.RpcChannelHandler;
 import com.sencorsta.ids.core.net.innerClient.RpcClientBootstrap;
 import com.sencorsta.ids.core.net.innerClient.RpcCodecFactory;
+import com.sencorsta.ids.core.net.protocol.RpcMessage;
+import com.sencorsta.ids.core.processor.MessageProcessor;
 import io.netty.channel.Channel;
 import lombok.extern.slf4j.Slf4j;
 
@@ -113,7 +115,7 @@ public class ProxyClient {
                     ThreadUtil.sleep((long) wait * count);
                     log.warn(" reconnect {}", server);
                     if (count++ == 3) {
-                        log.warn("reconnect {} over times quit!!!",server.getSid());
+                        log.warn("reconnect {} over times quit!!!", server.getSid());
                         return;
                     }
                 }
@@ -144,20 +146,6 @@ public class ProxyClient {
     }
 
 
-//    public static void sendByType(RpcMessage message, String type) {
-//        ConcurrentHashMap<String, Server> serverMapTemp = totalServers.get(type);
-//        if (serverMapTemp != null && serverMapTemp.size() > 0) {
-//            log.debug("sendByType开始:", type);
-//            Server bestServer = getBestServerByType(type);
-//            if (bestServer != null) {
-//                bestServer.channel().writeAndFlush(message);
-//                //message.channel=bestServer.channel();
-//                //sendMsg(message);
-//            }
-//        } else {
-//            log.warn("sendByType:类型不存在:", type);
-//        }
-//    }
 //
 //
 //    public static void sendBySID(RpcMessage message, String type, String SID) {
@@ -303,23 +291,50 @@ public class ProxyClient {
     }
 
 
-//    public static RpcMessage requestByType(RpcMessage req, String type) {
-//        ConcurrentHashMap<String, Server> serverMapTemp = totalServers.get(type);
-//        if (serverMapTemp != null && serverMapTemp.size() > 0) {
-//            log.debug("requestByType开始:", type);
-//            Server bestServer = getBestServerByType(type);
-//            if (bestServer != null) {
-//                req.channel = bestServer.channel();
-//                return SynFunction.request(req);
-//            } else {
-//                log.warn("requestByType:服务器不存在:", type);
-//            }
-//        } else {
-//            log.warn("requestByType:类型不存在:", type);
-//        }
-//        return null;
-//
-//    }
+    /**
+     * 同步远程调用
+     *
+     * @param req
+     * @param type
+     * @return
+     */
+    public static RpcMessage requestByTypeSync(RpcMessage req, String type) {
+        Map<String, Map<String, Server>> totalServers = Application.instance().getTotalServers();
+        Map<String, Server> serverMapTemp = totalServers.get(type);
+        if (serverMapTemp != null && serverMapTemp.size() > 0) {
+            log.debug("requestByType开始:{}", type);
+            Server bestServer = getBestServerByType(type);
+            if (bestServer != null) {
+                req.setChannel(bestServer.channel());
+                return MessageProcessor.request(req);
+            } else {
+                log.warn("requestByType:{} 服务器不存在", type);
+            }
+        } else {
+            log.warn("requestByType:{} 类型不存在:", type);
+        }
+        return null;
+    }
+
+    /**
+     * 异步远程调用
+     *
+     * @param message
+     * @param type
+     */
+    public static void sendByTypeAsync(RpcMessage message, String type) {
+        Map<String, Map<String, Server>> totalServers = Application.instance().getTotalServers();
+        Map<String, Server> serverMapTemp = totalServers.get(type);
+        if (serverMapTemp != null && serverMapTemp.size() > 0) {
+            log.debug("sendByType开始:{}", type);
+            Server bestServer = getBestServerByType(type);
+            if (bestServer != null) {
+                bestServer.channel().writeAndFlush(message);
+            }
+        } else {
+            log.warn("sendByType:{} 类型不存在:", type);
+        }
+    }
 
 
 //    public static void solo(String name) {

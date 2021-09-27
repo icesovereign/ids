@@ -1,17 +1,19 @@
 package com.sencorsta.ids.core.processor;
 
+import cn.hutool.core.lang.UUID;
 import cn.hutool.core.util.ObjectUtil;
+import com.sencorsta.ids.core.application.Application;
+import com.sencorsta.ids.core.application.proxy.ProxyClient;
 import com.sencorsta.ids.core.config.GlobalConfig;
 import com.sencorsta.ids.core.constant.ErrorCodeConstant;
 import com.sencorsta.ids.core.constant.ProtocolTypeConstant;
-import com.sencorsta.ids.core.entity.ErrorCode;
-import com.sencorsta.ids.core.entity.IdsRequest;
-import com.sencorsta.ids.core.entity.IdsResponse;
-import com.sencorsta.ids.core.entity.MethodProxy;
-import com.sencorsta.ids.core.net.protocol.MessageFactor;
+import com.sencorsta.ids.core.constant.SerializeTypeConstant;
+import com.sencorsta.ids.core.entity.*;
+import com.sencorsta.ids.core.net.protocol.MessageJsonFactory;
 import com.sencorsta.ids.core.net.protocol.RpcMessage;
 import com.sencorsta.ids.core.net.protocol.RpcMessageLock;
 import com.sencorsta.utils.object.Jsons;
+import io.netty.channel.Channel;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -53,27 +55,26 @@ public class MessageDispatcher implements Runnable {
         switch (message.getHeader().getType()) {
             // 服务器之间的请求 理论上必须能找到处理器 找不到就返回错误
             case ProtocolTypeConstant.TYPE_RPC_REQ:
-                handleReq(message);
+            case ProtocolTypeConstant.TYPE_PROXY_REQ:
+                handleRpcReq(message);
                 break;
             // 服务器之间的响应 一般是等待同步的消息 拿到响应后应该能触发解锁操作
             case ProtocolTypeConstant.TYPE_RPC_RES:
-                handleRes(message);
+                handleRpcRes(message);
                 break;
             // 推送一般直接触发对应的逻辑就行了
             case ProtocolTypeConstant.TYPE_RPC_PUSH:
-                handlePush(message);
+                handleRpcPush(message);
                 break;
             // 客户端来的请求
             case ProtocolTypeConstant.TYPE_REQ:
-                handlePush(message);
+                handleReq(message);
                 break;
-            // 返回给客户端的响应
+            // 返回给客户端的响应 直接推送给客户端
             case ProtocolTypeConstant.TYPE_RES:
-                handlePush(message);
-                break;
-            // 直接推送给客户端
             case ProtocolTypeConstant.TYPE_PUSH:
-                handlePush(message);
+            case ProtocolTypeConstant.TYPE_PROXY_RES:
+                handleRes(message);
                 break;
             default:
                 log.warn("未知协议类型：{}", message.getHeader().type);
@@ -82,6 +83,54 @@ public class MessageDispatcher implements Runnable {
     }
 
     private void handleRes(RpcMessage message) {
+        String userId = message.getUserId();
+        if (ObjectUtil.isNotEmpty(userId)) {
+            Client client = GlobalContainer.CLIENTS.get(userId);
+            if (ObjectUtil.isNotEmpty(client)) {
+                if (message.getHeader().getType() == ProtocolTypeConstant.TYPE_PROXY_RES) {
+                    message.getHeader().setType(ProtocolTypeConstant.TYPE_RES);
+                }
+                client.sendMsg(message);
+            } else {
+                log.trace("client 不存在! userId:{}", userId);
+            }
+        } else {
+            log.warn("用户id不存在!");
+        }
+    }
+
+    private void handleReq(RpcMessage message) {
+        //TODO ice 白名单机制
+
+        //判断是否登录过了
+        Channel channel = message.getChannel();
+        Client client = channel.attr(GlobalConfig.CLIENT_KEY).get();
+        if (client == null) {
+            //用户没有登陆 生成临时用户id
+            String userId = "TEMP_" + UUID.fastUUID();
+            message.setUserId(userId);
+            Client newClient = new Client();
+            newClient.setUserId(userId);
+            newClient.setChannel(channel);
+            GlobalContainer.CLIENTS.put(userId, newClient);
+            channel.attr(GlobalConfig.CLIENT_KEY).set(newClient);
+        } else {
+            message.setUserId(client.getUserId());
+        }
+        //先尝试本地是否有此方法
+        MethodProxy methodProxy = MessageProcessor.getMETHOD_MAP().get(message.getMethod());
+        if (methodProxy != null) {
+            handleRpcReq(message);
+        } else {
+            String type = message.getType();
+            if (!Application.instance().SERVER_TYPE.equals(type)) {
+                message.getHeader().setType(ProtocolTypeConstant.TYPE_PROXY_REQ);
+                ProxyClient.sendByTypeAsync(message, type);
+            }
+        }
+    }
+
+    private void handleRpcRes(RpcMessage message) {
         Long msgId = message.getMsgId();
         if (msgId > 0) {
             RpcMessageLock lock = MessageProcessor.LOCKS.get(msgId);
@@ -101,11 +150,12 @@ public class MessageDispatcher implements Runnable {
         }
     }
 
-    private void handleReq(RpcMessage message) {
+    private void handleRpcReq(RpcMessage message) {
         MethodProxy methodProxy = MessageProcessor.getMETHOD_MAP().get(message.getMethod());
-        RpcMessage res = MessageFactor.newResMessage();
+        RpcMessage res = MessageJsonFactory.newResMessage(message.getHeader().getType());
         res.setMsgId(message.getMsgId());
         res.setMethod(message.getMethod());
+        res.setUserId(message.getUserId());
         if (ObjectUtil.isNotNull(methodProxy)) {
             try {
                 Object result = invoke(message, methodProxy);
@@ -123,7 +173,7 @@ public class MessageDispatcher implements Runnable {
         message.getChannel().writeAndFlush(res);
     }
 
-    private void handlePush(RpcMessage message) {
+    private void handleRpcPush(RpcMessage message) {
         MethodProxy methodProxy = MessageProcessor.getMETHOD_MAP().get(message.getMethod());
         if (ObjectUtil.isNotNull(methodProxy)) {
             try {
@@ -138,12 +188,20 @@ public class MessageDispatcher implements Runnable {
         byte[] data = message.getData();
         final Method method = methodProxy.getMethod();
         Class<?> valueType = methodProxy.getValueType();
-        Object object = Jsons.toBean(data, valueType);
+        Object object;
+        if (message.getSerializeType() == SerializeTypeConstant.TYPE_JSON) {
+            object = Jsons.toBean(data, valueType);
+        } else if (message.getSerializeType() == SerializeTypeConstant.TYPE_STRING) {
+            object = new String(data);
+        } else {
+            object = data;
+        }
         if (object == null) {
             object = data;
         }
         IdsRequest<?> idsRequest = new IdsRequest<>(object);
         idsRequest.setChannel(message.getChannel());
+        idsRequest.setUserId(message.getUserId());
         try {
             return method.invoke(methodProxy.getObj(), idsRequest);
         } catch (Exception exception) {

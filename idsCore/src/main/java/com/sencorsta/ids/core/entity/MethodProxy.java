@@ -15,9 +15,6 @@ import java.lang.reflect.Method;
 @AllArgsConstructor
 @Data
 public class MethodProxy {
-//    String className;
-//    String methodName;
-//    String parameterName;
     Object obj;
     Method method;
     Class<Object> valueType;

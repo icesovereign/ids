@@ -1,7 +1,7 @@
 package com.sencorsta.ids.core.net.protocol;
 
+import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sencorsta.ids.core.config.GlobalConfig;
 import com.sencorsta.ids.core.constant.SerializeTypeConstant;
 import com.sencorsta.utils.object.Jsons;
@@ -14,7 +14,7 @@ import java.util.Arrays;
 
 /**
  * @author ICe
- * @description: RPC消息
+ * @description: RPC消息 只有服务器内部之间才能使用RpcMessage
  * @date 2019/6/12 17:19
  */
 @Data
@@ -29,6 +29,7 @@ public class RpcMessage extends BaseMessage {
      */
     private String method;
     private String token;
+    private String userId;
     private Long msgId;
     private Integer errCode;
     /**
@@ -48,6 +49,7 @@ public class RpcMessage extends BaseMessage {
         msgId = 0L;
         errCode = 0;
         token = "";
+        userId = "";
         method = "";
     }
 
@@ -72,6 +74,7 @@ public class RpcMessage extends BaseMessage {
         body.content.writeShort(serializeType);
         body.writeString(method);
         body.writeString(token);
+        body.writeString(userId);
         body.content.writeLong(msgId);
         body.content.writeInt(errCode);
         body.content.writeBytes(data);
@@ -83,6 +86,7 @@ public class RpcMessage extends BaseMessage {
         serializeType = body.content.readShort();
         method = body.readString();
         token = body.readString();
+        userId = body.readString();
         msgId = body.content.readLong();
         errCode = body.content.readInt();
         data = new byte[body.content.readableBytes()];
@@ -90,15 +94,23 @@ public class RpcMessage extends BaseMessage {
     }
 
     public String toStringPlus() {
+        String user = "";
+        if (StrUtil.isNotBlank(userId)) {
+            user = "userId:" + userId;
+        }
+        String err = "";
+        if (errCode != 0) {
+            err = " errCode:" + errCode;
+        }
         switch (serializeType) {
             case SerializeTypeConstant.TYPE_JSON:
             case SerializeTypeConstant.TYPE_STRING:
-                return "[" + header.toStringPlus() + "] " + method + "  " + "errCode:" + errCode + " " + SerializeTypeConstant.getSerializeStrByType(serializeType) + ":" + new String(data, GlobalConfig.UTF_8);
+                return "[" + header.toStringPlus() + "] " + method + "  " + user + err + " " + SerializeTypeConstant.getSerializeStrByType(serializeType) + ":" + new String(data, GlobalConfig.UTF_8);
             case SerializeTypeConstant.TYPE_BYTEARR:
             case SerializeTypeConstant.TYPE_PROTOBUF:
-                return "[" + header.toStringPlus() + "] " + method + "  " + "errCode:" + errCode + " " + SerializeTypeConstant.getSerializeStrByType(serializeType) + ":" + Arrays.toString(data);
+                return "[" + header.toStringPlus() + "] " + method + "  " + user + err + " " + SerializeTypeConstant.getSerializeStrByType(serializeType) + ":" + Arrays.toString(data);
             default:
-                return "[" + header.toStringPlus() + "] " + method + "  " + "errCode:" + errCode + " " + SerializeTypeConstant.getSerializeStrByType(serializeType) + ":" + "🐷未知协议🐷";
+                return "[" + header.toStringPlus() + "] " + method + "  " + user + err + " " + SerializeTypeConstant.getSerializeStrByType(serializeType) + ":" + "🐷未知协议🐷";
         }
     }
 
@@ -127,5 +139,8 @@ public class RpcMessage extends BaseMessage {
         channel.attr(att).set(value);
     }
 
-
+    public String getType() {
+        String[] split = method.split("/");
+        return split[1];
+    }
 }

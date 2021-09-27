@@ -1,4 +1,4 @@
-package com.sencorsta.ids.master;
+package com.sencorsta.ids.idsgateway;
 
 import com.sencorsta.ids.core.application.Application;
 

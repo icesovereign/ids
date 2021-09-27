@@ -5,6 +5,7 @@ import ch.qos.logback.classic.util.ContextInitializer;
 import ch.qos.logback.core.joran.spi.JoranException;
 import cn.hutool.setting.GroupedMap;
 import cn.hutool.setting.Setting;
+import com.sencorsta.ids.core.entity.Client;
 import com.sencorsta.ids.core.entity.Server;
 import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
@@ -30,6 +31,7 @@ public class GlobalConfig extends Setting {
     public static Short SIGNATURE = 7777;
     public static boolean IS_DEBUG = false;
     public static AttributeKey<Server> SERVER_KEY = AttributeKey.valueOf("SERVER_KEY");
+    public static AttributeKey<Client> CLIENT_KEY = AttributeKey.valueOf("CLIENT_KEY");
 
     private static class SingletonHolder {
         private static final GlobalConfig INSTANCE = new GlobalConfig();

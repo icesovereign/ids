@@ -1,4 +1,4 @@
-package ${package}.${typeLow}.controller;
+package com.sencorsta.ids.appdemo.controller;
 
 import com.sencorsta.ids.core.entity.IdsRequest;
 import com.sencorsta.ids.core.entity.IdsResponse;
@@ -9,7 +9,7 @@ import com.sencorsta.ids.core.entity.annotation.RequestMapping;
 import com.sencorsta.ids.core.net.protocol.MessageJsonFactory;
 import com.sencorsta.ids.core.net.protocol.RpcMessage;
 import com.sencorsta.ids.core.processor.MessageProcessor;
-import ${package}.${typeLow}.service.${typeFirstUp}Service;
+import com.sencorsta.ids.appdemo.service.AppDemoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -17,24 +17,24 @@ import lombok.extern.slf4j.Slf4j;
  * @author ICe
  */
 @Controller
-@RequestMapping("/${typeFirstLow}")
+@RequestMapping("/appDemo")
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class ${typeFirstUp}Controller {
+public class AppDemoController {
 
-    private final ${typeFirstUp}Service ${typeFirstLow}Service;
+    private final AppDemoService appDemoService;
 
     @RequestMapping("/helloWorld")
     public IdsResponse<String> helloWorld(IdsRequest<byte[]> request) {
 
         RpcMessage message = MessageJsonFactory.newPushMessage();
-        message.setMethod("/${typeFirstLow}/helloWorld/push");
+        message.setMethod("/appDemo/helloWorld/push");
         message.setUserId(request.getUserId());
         message.setChannel(request.getChannel());
         message.setJsonData(new Server());
         MessageProcessor.push(message);
 
-        return new IdsResponse<>(${typeFirstLow}Service.helloWorld(new String(request.getData()),request.getChannel()));
+        return new IdsResponse<>(appDemoService.helloWorld(new String(request.getData()),request.getChannel()));
     }
 
 }

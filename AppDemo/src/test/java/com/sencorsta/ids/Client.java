@@ -1,4 +1,4 @@
-package ${package};
+package com.sencorsta.ids;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,14 +20,14 @@ public class Client {
     public static void main(String[] args){
         GlobalConfig.instance();
         GlobalConfig.IS_DEBUG = false;
-        RpcClientBootstrap bootstrap = new RpcClientBootstrap("${typeFirstLow}ClientTest", new RpcCodecFactory(new RpcClientChannelHandler()));
+        RpcClientBootstrap bootstrap = new RpcClientBootstrap("appDemoClientTest", new RpcCodecFactory(new RpcClientChannelHandler()));
         Channel connect = bootstrap.connect("127.0.0.1", 10001);
 
         int total = 1;
         int count = 0;
         while (count < total) {
             RpcMessage message = new RpcMessage(ProtocolTypeConstant.TYPE_REQ);
-            message.setMethod("/${typeFirstLow}/helloWorld");
+            message.setMethod("/appDemo/helloWorld");
             message.setSerializeType(SerializeTypeConstant.TYPE_BYTEARR);
             message.setData("ice".getBytes());
             message.setChannel(connect);
