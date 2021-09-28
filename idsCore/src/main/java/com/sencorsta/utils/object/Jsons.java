@@ -3,11 +3,16 @@ package com.sencorsta.utils.object;
 import cn.hutool.core.util.ObjectUtil;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ContainerNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sencorsta.ids.core.application.master.response.PingMasterResponse;
 import com.sencorsta.ids.core.entity.IdsResponse;
+import lombok.Getter;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -18,6 +23,7 @@ import java.text.SimpleDateFormat;
  * @author ICe
  */
 public class Jsons {
+    @Getter
     public static ObjectMapper mapper = new ObjectMapper();
 
     static {
@@ -50,6 +56,23 @@ public class Jsons {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static ObjectNode createObjectNode() {
+        return mapper.createObjectNode();
+    }
+
+    public static ArrayNode createArrayNode() {
+        return mapper.createArrayNode();
+    }
+
+    public static void main(String[] args) throws Exception {
+        String jsonString="{\"channel\":null,\"server\":{\"type\":\"idsGateway\",\"sid\":null,\"host\":\"0.0.0.0\",\"publicHost\":\"10.198.50.16\",\"port\":10001,\"freeMemory\":385336040,\"maxMemory\":510656512}}";
+
+        JsonNode jsonNode = mapper.readTree(jsonString);
+
+        ObjectNode objectNode = jsonNode.deepCopy();
+        System.out.println(objectNode.get("server"));
     }
 
 }

@@ -35,7 +35,7 @@ public class MasterServiceImpl implements MasterService {
     public String helloWorld(String s) {
         String name = masterDao.getName(s);
         log.info("你好啊!!!" + name);
-        return name;
+        return "你好啊!!!" + name;
     }
 
     @Override

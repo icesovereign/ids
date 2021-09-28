@@ -28,7 +28,7 @@
     </dependencies>
 
     <build>
-        <finalName>ids-proxy</finalName>
+        <finalName>${typeFirstLow}</finalName>
         <plugins>
             <!-- Jib -->
             <plugin>
@@ -36,7 +36,7 @@
                 <artifactId>jib-maven-plugin</artifactId>
                 <configuration>
                     <to>
-                        <image>sencorsta.com/ids-proxy</image>
+                        <image>sencorsta.com/${typeFirstLow}</image>
                     </to>
 <!--
                     <containerizingMode>packaged</containerizingMode>
@@ -48,7 +48,7 @@
                             <TZ>Asia/Shanghai</TZ>
                         </environment>
                         <jvmFlags>
-                            <jvmFlag>-Dserver.type=master</jvmFlag>
+                            <jvmFlag>-Dserver.type=${typeFirstLow}</jvmFlag>
                             <jvmFlag>-Dlog.home=/app/log/</jvmFlag>
                         </jvmFlags>
                         <ports>

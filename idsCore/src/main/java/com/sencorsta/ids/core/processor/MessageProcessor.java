@@ -3,6 +3,7 @@ package com.sencorsta.ids.core.processor;
 import com.sencorsta.ids.core.config.ConfigGroup;
 import com.sencorsta.ids.core.config.GlobalConfig;
 import com.sencorsta.ids.core.entity.MethodProxy;
+import com.sencorsta.ids.core.net.protocol.HttpMessage;
 import com.sencorsta.ids.core.net.protocol.RpcMessage;
 import com.sencorsta.ids.core.net.protocol.RpcMessageLock;
 import lombok.Getter;
@@ -24,6 +25,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class MessageProcessor {
 
     private final static LinkedBlockingQueue<RpcMessage> INCOMING_MESSAGE_QUEUE = new LinkedBlockingQueue<>(Integer.MAX_VALUE);
+    private final static LinkedBlockingQueue<HttpMessage> INCOMING_HTTP_MESSAGE_QUEUE = new LinkedBlockingQueue<>(Integer.MAX_VALUE);
 
     private static final int CAPACITY = GlobalConfig.instance().getInt("executor.capacity", ConfigGroup.performance.getName(), 10000);
     private static final SynchronousQueue<Runnable> EXECUTOR_QUEUE = new SynchronousQueue<>();
@@ -70,11 +72,23 @@ public class MessageProcessor {
         try {
             EXECUTOR.execute(new MessageDispatcher(msg));
         } catch (RejectedExecutionException e) {
-            log.debug("接收队列已满,消息进入预备队列" + INCOMING_MESSAGE_QUEUE.size());
+            log.debug("SOCKET接收队列已满,消息进入预备队列" + INCOMING_MESSAGE_QUEUE.size());
             if (INCOMING_MESSAGE_QUEUE.size() > WARN_COUNT) {
-                log.warn("预备队列偏大 -> " + INCOMING_MESSAGE_QUEUE.size());
+                log.warn("SOCKET预备队列偏大 -> " + INCOMING_MESSAGE_QUEUE.size());
             }
             INCOMING_MESSAGE_QUEUE.offer(msg);
+        }
+    }
+
+    public static void incomeHttpMessage(HttpMessage msg) {
+        try {
+            EXECUTOR.execute(new MessageHttpDispatcher(msg));
+        } catch (RejectedExecutionException e) {
+            log.debug("HTTP接收队列已满,消息进入预备队列" + INCOMING_HTTP_MESSAGE_QUEUE.size());
+            if (INCOMING_HTTP_MESSAGE_QUEUE.size() > WARN_COUNT) {
+                log.warn("HTTP预备队列偏大 -> " + INCOMING_HTTP_MESSAGE_QUEUE.size());
+            }
+            INCOMING_HTTP_MESSAGE_QUEUE.offer(msg);
         }
     }
 
