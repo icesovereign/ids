@@ -29,13 +29,13 @@ public class MessageProcessor {
 
     private static final int CAPACITY = GlobalConfig.instance().getInt("executor.capacity", ConfigGroup.performance.getName(), 10000);
     private static final SynchronousQueue<Runnable> EXECUTOR_QUEUE = new SynchronousQueue<>();
-    private static final ExecutorService EXECUTOR = new ThreadPoolExecutor(0, CAPACITY, 60L, TimeUnit.SECONDS, EXECUTOR_QUEUE, new IdsThreadFactory("IDS-EXE"));
+    private static final ExecutorService EXECUTOR = new ThreadPoolExecutor(0, CAPACITY, 60L, TimeUnit.SECONDS, EXECUTOR_QUEUE, new IdsThreadFactory("message"));
     private static final int WARN_COUNT = GlobalConfig.instance().getInt("executor.warn", ConfigGroup.performance.getName(), 10000);
 
     /**
      * 监控线程
      */
-    public static final ScheduledExecutorService MONITOR = new ScheduledThreadPoolExecutor(1, new IdsThreadFactory("IDS-MONITOR"));
+    public static final ScheduledExecutorService MONITOR = new ScheduledThreadPoolExecutor(1, new IdsThreadFactory("monitor"));
 
     /**
      * 方法map

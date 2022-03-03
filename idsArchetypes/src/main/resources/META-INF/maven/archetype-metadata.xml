@@ -25,5 +25,11 @@
         <fileSet filtered="true" packaged="true">
             <directory>src/test/java</directory>
         </fileSet>
+        <fileSet filtered="false">
+            <directory>web</directory>
+<!--            <excludes>-->
+<!--                <exclude>*.ico</exclude>-->
+<!--            </excludes>-->
+        </fileSet>
     </fileSets>
 </archetype-descriptor>

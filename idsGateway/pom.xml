@@ -22,7 +22,7 @@
     <dependencies>
         <dependency>
             <groupId>com.sencorsta</groupId>
-            <artifactId>ids-common</artifactId>
+            <artifactId>idsCommon</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

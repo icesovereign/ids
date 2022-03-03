@@ -4,6 +4,7 @@ import cn.hutool.system.SystemUtil;
 import com.sencorsta.ids.core.config.ConfigGroup;
 import com.sencorsta.ids.core.config.GlobalConfig;
 import com.sencorsta.ids.core.net.handle.ProtocolChooseHandle;
+import com.sencorsta.ids.core.processor.IdsThreadFactory;
 import com.sencorsta.utils.string.StringUtil;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -69,8 +70,8 @@ public class RpcServerBootstrap {
         try {
             serverBootstrap = new ServerBootstrap();
 
-            ThreadPerTaskExecutor bossExecutor = new ThreadPerTaskExecutor(new DefaultThreadFactory(name + "-BOSS"));
-            ThreadPerTaskExecutor workerExecutor = new ThreadPerTaskExecutor(new DefaultThreadFactory(name + "-WORKER"));
+            ThreadPerTaskExecutor bossExecutor = new ThreadPerTaskExecutor(new IdsThreadFactory(name + "NetBoss"));
+            ThreadPerTaskExecutor workerExecutor = new ThreadPerTaskExecutor(new IdsThreadFactory(name + "NetWorker"));
             if (SystemUtil.getOsInfo().isLinux() && Epoll.isAvailable()) {
                 //第一个参数为0 则代表默认值:核心数*2
                 bossGroup = new EpollEventLoopGroup(0, bossExecutor);
@@ -123,6 +124,7 @@ public class RpcServerBootstrap {
                         } else {
                             realHost += ":" + j;
                             log.info(name + "服务绑定于 -> " + socketAddress + " (公开地址:" + realHost + ")");
+                            log.info(name + "HTTP服务地址 -> https://{}:{}/", socketAddress.getHostString(), j);
                         }
                         GlobalConfig.instance().put(ConfigGroup.server.getName(), portStr, j + "");
                         isEnable = true;

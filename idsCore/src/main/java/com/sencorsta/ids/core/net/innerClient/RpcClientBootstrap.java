@@ -1,5 +1,6 @@
 package com.sencorsta.ids.core.net.innerClient;
 
+import com.sencorsta.ids.core.processor.IdsThreadFactory;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -25,7 +26,7 @@ public class RpcClientBootstrap {
     private EventLoopGroup group;
 
     public RpcClientBootstrap(String name, ChannelInitializer<SocketChannel> factory) {
-        group = new NioEventLoopGroup(0, new ThreadPerTaskExecutor(new DefaultThreadFactory(name + "Send")));
+        group = new NioEventLoopGroup(0, new ThreadPerTaskExecutor(new IdsThreadFactory(name + "Sender")));
         bootstrap = new Bootstrap();
         bootstrap.channel(NioSocketChannel.class);
         bootstrap.option(ChannelOption.TCP_NODELAY, true);

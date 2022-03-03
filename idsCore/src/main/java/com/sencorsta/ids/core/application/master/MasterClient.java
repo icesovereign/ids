@@ -54,10 +54,10 @@ public class MasterClient {
     /**
      * 维护线程
      */
-    public final ScheduledExecutorService MAINTAIN = new ScheduledThreadPoolExecutor(1, new IdsThreadFactory("client-master-maintain"));
+    public final ScheduledExecutorService MAINTAIN = new ScheduledThreadPoolExecutor(1, new IdsThreadFactory("masterClient"));
 
     public void start() {
-        RpcClientBootstrap bootstrap = new RpcClientBootstrap("client-master", new RpcCodecFactory(new RpcChannelHandler()));
+        RpcClientBootstrap bootstrap = new RpcClientBootstrap("master", new RpcCodecFactory(new RpcChannelHandler()));
         Integer interval = GlobalConfig.instance().getInt("heart.interval", ConfigGroup.performance.getName(), 30);
         MAINTAIN.scheduleWithFixedDelay(() -> {
             try {

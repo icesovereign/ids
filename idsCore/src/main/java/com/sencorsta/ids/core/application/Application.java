@@ -19,7 +19,10 @@ import com.sencorsta.ids.core.config.GlobalConfig;
 import com.sencorsta.ids.core.entity.IdsRequest;
 import com.sencorsta.ids.core.entity.MethodProxy;
 import com.sencorsta.ids.core.entity.Server;
-import com.sencorsta.ids.core.entity.annotation.*;
+import com.sencorsta.ids.core.entity.annotation.Component;
+import com.sencorsta.ids.core.entity.annotation.Controller;
+import com.sencorsta.ids.core.entity.annotation.RequestMapping;
+import com.sencorsta.ids.core.entity.annotation.Service;
 import com.sencorsta.ids.core.net.innerServer.RpcServerBootstrap;
 import com.sencorsta.ids.core.processor.IdsThreadFactory;
 import com.sencorsta.ids.core.processor.MessageProcessor;
@@ -34,19 +37,21 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * 启动器
@@ -59,7 +64,7 @@ public abstract class Application {
     /**
      * 维护线程
      */
-    public final ScheduledExecutorService MAINTAIN = new ScheduledThreadPoolExecutor(1, new IdsThreadFactory("IDS-MAINTAIN"));
+    public final ScheduledExecutorService MAINTAIN = new ScheduledThreadPoolExecutor(1, new IdsThreadFactory("maintain"));
 
     /**
      * 服务器列表
@@ -92,13 +97,13 @@ public abstract class Application {
             // 打印进度条
             doProcess();
             SERVER_TYPE = GlobalConfig.instance().getStr("server.type", ConfigGroup.core.getName(), "server");
+            // 打印配置参数
+            GlobalConfig.instance().printValue();
             // 扫描包内组件
             scanPackage();
             // 启动服务
             RpcServerBootstrap boot = new RpcServerBootstrap(SERVER_TYPE);
             boot.start();
-            // 打印配置参数
-            GlobalConfig.instance().printValue();
             // 添加安全停服线程
             addCloseProcess();
 

@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class ProxyClient {
 
-    static RpcClientBootstrap bootstrap = new RpcClientBootstrap("client-proxy", new RpcCodecFactory(new RpcChannelHandler()));
+    static RpcClientBootstrap bootstrap = new RpcClientBootstrap("proxy", new RpcCodecFactory(new RpcChannelHandler()));
 
     // 维护链接
     public static synchronized void maintenanceList(Map<String, Map<String, Server>> data) {

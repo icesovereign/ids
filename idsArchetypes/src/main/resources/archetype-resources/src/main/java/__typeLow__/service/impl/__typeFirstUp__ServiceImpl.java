@@ -8,6 +8,7 @@ import ${package}.${typeLow}.service.${typeFirstUp}Service;
 import io.netty.channel.Channel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.sun.javafx.binding.StringFormatter;
 
 /**
  * @author ICe

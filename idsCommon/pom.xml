@@ -8,7 +8,7 @@
         <version>2.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>ids-common</artifactId>
+    <artifactId>idsCommon</artifactId>
     <packaging>jar</packaging>
     <name>idsCommon</name>
     <description>ICe Distribution Service Common</description>
