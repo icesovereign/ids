@@ -1,4 +1,6 @@
 # ids
+[![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-%250778B9.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
+
 ICe Distribution Service Core
 
 快速开发分布式服务器框架 
